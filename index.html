@@ -589,208 +589,242 @@
             </div>
 
             <!-- Add Player Tab -->
-            <!-- Dans la section Informations Personnelles, après le champ Catégorie -->
-<div class="form-group">
-    <label>Catégorie *</label>
-    <select name="category" required>
-        <option value="">Sélectionner...</option>
-        <option value="U11">U11</option>
-        <option value="U13">U13</option>
-        <option value="U15">U15</option>
-        <option value="U18">U18</option>
-        <option value="Seniors">Seniors</option>
-    </select>
-</div>
-<div class="form-group">
-    <label>Équipe actuelle *</label>
-    <select name="currentTeam" required>
-        <option value="">Sélectionner...</option>
-        <option value="Équipe 1">Équipe 1 - Championnat</option>
-        <option value="Équipe 2">Équipe 2 - Réserve</option>
-        <option value="Espoirs">Espoirs</option>
-        <option value="Élite">Élite</option>
-        <option value="Développement">Développement</option>
-    </select>
-</div>
-<div class="form-group">
-    <label>Date d'arrivée au club</label>
-    <input type="date" name="joinDate">
-</div>
-
-                    <!-- Données Morphologiques -->
-                    <div class="form-section">
-                        <h3>Données Morphologiques</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Taille (cm) *</label>
-                                <input type="number" name="height" min="140" max="220" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Poids (kg)</label>
-                                <input type="number" name="weight" min="40" max="150">
-                            </div>
-                            <div class="form-group">
-                                <label>Envergure (cm)</label>
-                                <input type="number" name="wingspan" min="140" max="250">
-                            </div>
-                            <div class="form-group">
-                                <label>Détente verticale (cm)</label>
-                                <input type="number" name="verticalJump" min="0" max="100">
-                            </div>
-                            <div class="form-group">
-                                <label>Main dominante</label>
-                                <select name="dominantHand">
-                                    <option value="Droite">Droite</option>
-                                    <option value="Gauche">Gauche</option>
-                                    <option value="Ambidextre">Ambidextre</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Pointure</label>
-                                <input type="number" name="shoeSize" min="35" max="50" step="0.5">
-                            </div>
+           <div id="addPlayer" class="tab-content">
+            <h2>Ajouter une Nouvelle Joueuse</h2>
+            
+            <form id="playerForm" onsubmit="savePlayer(event)">
+                <!-- Informations Personnelles -->
+                <div class="form-section">
+                    <h3>Informations Personnelles</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Prénom *</label>
+                            <input type="text" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nom *</label>
+                            <input type="text" name="lastName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Date de naissance *</label>
+                            <input type="date" name="birthDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Numéro de maillot</label>
+                            <input type="number" name="number" min="0" max="99">
+                        </div>
+                        <div class="form-group">
+                            <label>Catégorie *</label>
+                            <select name="category" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="U15">U15</option>
+                                <option value="U18">U18</option>
+                                <option value="Seniors">Seniors</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Catégorie actuelle *</label>
+                            <select name="currentCategory" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="U15">U15</option>
+                                <option value="U18">U18</option>
+                                <option value="Seniors">Seniors</option>
+                                <option value="Reserve">Réserve</option>
+                                <option value="Blessée">Blessée</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Équipe actuelle *</label>
+                            <select name="currentTeam" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="Équipe 1">Équipe 1 - Championnat</option>
+                                <option value="Équipe 2">Équipe 2 - Réserve</option>
+                                <option value="Espoirs">Espoirs</option>
+                                <option value="Élite">Élite</option>
+                                <option value="Développement">Développement</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date d'arrivée au club</label>
+                            <input type="date" name="joinDate">
                         </div>
                     </div>
-
-                    <!-- Profil de Jeu -->
-                    <div class="form-section">
-                        <h3>Profil de Jeu</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Poste principal *</label>
-                                <select name="primaryPosition" required>
-                                    <option value="">Sélectionner...</option>
-                                    <option value="Meneuse">Meneuse (1)</option>
-                                    <option value="Arrière">Arrière (2)</option>
-                                    <option value="Ailière">Ailière (3)</option>
-                                    <option value="Ailière forte">Ailière forte (4)</option>
-                                    <option value="Pivot">Pivot (5)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Poste secondaire</label>
-                                <select name="secondaryPosition">
-                                    <option value="">Aucun</option>
-                                    <option value="Meneuse">Meneuse (1)</option>
-                                    <option value="Arrière">Arrière (2)</option>
-                                    <option value="Ailière">Ailière (3)</option>
-                                    <option value="Ailière forte">Ailière forte (4)</option>
-                                    <option value="Pivot">Pivot (5)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Profil offensif</label>
-                                <select name="offensiveProfile">
-                                    <option value="">Sélectionner...</option>
-                                    <option value="Scoreuse intérieure">Scoreuse intérieure</option>
-                                    <option value="Scoreuse extérieure">Scoreuse extérieure</option>
-                                    <option value="Créatrice">Créatrice/Facilitatrice</option>
-                                    <option value="Shooteuse">Shooteuse</option>
-                                    <option value="Slasheuse">Slasheuse</option>
-                                    <option value="Post-up player">Post-up player</option>
-                                    <option value="Catch & shoot">Catch & shoot</option>
-                                    <option value="Polyvalente">Polyvalente</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Profil défensif</label>
-                                <select name="defensiveProfile">
-                                    <option value="">Sélectionner...</option>
-                                    <option value="Lock defender">Lock defender</option>
-                                    <option value="Rim protector">Rim protector</option>
-                                    <option value="Défenseuse périmètre">Défenseuse périmètre</option>
-                                    <option value="Voleuse de ballon">Voleuse de ballon</option>
-                                    <option value="Rebondeuse">Rebondeuse</option>
-                                    <option value="Polyvalente">Défenseuse polyvalente</option>
-                                </select>
-                            </div>
+                </div>
+        
+                <!-- Données Morphologiques -->
+                <div class="form-section">
+                    <h3>Données Morphologiques</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Taille (cm) *</label>
+                            <input type="number" name="height" min="140" max="220" required>
                         </div>
-
-                        <h4 style="margin-top: 20px; margin-bottom: 10px;">Caractéristiques dominantes</h4>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" name="characteristics" value="Vitesse" id="char1">
-                                <label for="char1">Vitesse</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" name="characteristics" value="Puissance physique" id="char2">
-                                <label for="char2">Puissance physique</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" name="characteristics" value="Technique pure" id="char3">
-                                <label for="char3">Technique pure</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" name="characteristics" value="QI basket élevé" id="char4">
-                                <label for="char4">QI basket élevé</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" name="characteristics" value="Adresse longue distance" id="char5">
-                                <label for="char5">Adresse longue distance</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" name="characteristics" value="Jeu dos au panier" id="char6">
-                                <label for="char6">Jeu dos au panier</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" name="characteristics" value="Défense élite" id="char7">
-                                <label for="char7">Défense élite</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" name="characteristics" value="Vision de jeu" id="char8">
-                                <label for="char8">Vision de jeu</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" name="characteristics" value="Leadership vocal" id="char9">
-                                <label for="char9">Leadership vocal</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" name="characteristics" value="Polyvalence" id="char10">
-                                <label for="char10">Polyvalence</label>
-                            </div>
+                        <div class="form-group">
+                            <label>Poids (kg)</label>
+                            <input type="number" name="weight" min="40" max="150">
+                        </div>
+                        <div class="form-group">
+                            <label>Envergure (cm)</label>
+                            <input type="number" name="wingspan" min="140" max="250">
+                        </div>
+                        <div class="form-group">
+                            <label>Détente verticale (cm)</label>
+                            <input type="number" name="verticalJump" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Main dominante</label>
+                            <select name="dominantHand">
+                                <option value="Droite">Droite</option>
+                                <option value="Gauche">Gauche</option>
+                                <option value="Ambidextre">Ambidextre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Pointure</label>
+                            <input type="number" name="shoeSize" min="35" max="50" step="0.5">
                         </div>
                     </div>
-
-                    <!-- Informations Médicales -->
-                    <div class="form-section">
-                        <h3>Informations Médicales</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Groupe sanguin</label>
-                                <select name="bloodType">
-                                    <option value="">Non renseigné</option>
-                                    <option value="A+">A+</option>
-                                    <option value="A-">A-</option>
-                                    <option value="B+">B+</option>
-                                    <option value="B-">B-</option>
-                                    <option value="AB+">AB+</option>
-                                    <option value="AB-">AB-</option>
-                                    <option value="O+">O+</option>
-                                    <option value="O-">O-</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Allergies connues</label>
-                                <input type="text" name="allergies" placeholder="Ex: Pollen, acariens...">
-                            </div>
-                            <div class="form-group">
-                                <label>Contact d'urgence</label>
-                                <input type="tel" name="emergencyContact" placeholder="06 XX XX XX XX">
-                            </div>
-                            <div class="form-group">
-                                <label>Port de lunettes/lentilles</label>
-                                <select name="glasses">
-                                    <option value="Non">Non</option>
-                                    <option value="Lunettes">Lunettes</option>
-                                    <option value="Lentilles">Lentilles</option>
-                                </select>
-                            </div>
+                </div>
+        
+                <!-- Profil de Jeu -->
+                <div class="form-section">
+                    <h3>Profil de Jeu</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Poste principal *</label>
+                            <select name="primaryPosition" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="Meneuse">Meneuse (1)</option>
+                                <option value="Arrière">Arrière (2)</option>
+                                <option value="Ailière">Ailière (3)</option>
+                                <option value="Ailière forte">Ailière forte (4)</option>
+                                <option value="Pivot">Pivot (5)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Poste secondaire</label>
+                            <select name="secondaryPosition">
+                                <option value="">Aucun</option>
+                                <option value="Meneuse">Meneuse (1)</option>
+                                <option value="Arrière">Arrière (2)</option>
+                                <option value="Ailière">Ailière (3)</option>
+                                <option value="Ailière forte">Ailière forte (4)</option>
+                                <option value="Pivot">Pivot (5)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Profil offensif</label>
+                            <select name="offensiveProfile">
+                                <option value="">Sélectionner...</option>
+                                <option value="Scoreuse intérieure">Scoreuse intérieure</option>
+                                <option value="Scoreuse extérieure">Scoreuse extérieure</option>
+                                <option value="Créatrice">Créatrice/Facilitatrice</option>
+                                <option value="Shooteuse">Shooteuse</option>
+                                <option value="Slasheuse">Slasheuse</option>
+                                <option value="Post-up player">Post-up player</option>
+                                <option value="Catch & shoot">Catch & shoot</option>
+                                <option value="Polyvalente">Polyvalente</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Profil défensif</label>
+                            <select name="defensiveProfile">
+                                <option value="">Sélectionner...</option>
+                                <option value="Lock defender">Lock defender</option>
+                                <option value="Rim protector">Rim protector</option>
+                                <option value="Défenseuse périmètre">Défenseuse périmètre</option>
+                                <option value="Voleuse de ballon">Voleuse de ballon</option>
+                                <option value="Rebondeuse">Rebondeuse</option>
+                                <option value="Polyvalente">Défenseuse polyvalente</option>
+                            </select>
                         </div>
                     </div>
-
-                    <button type="submit" class="btn-primary">Enregistrer la Joueuse</button>
-                </form>
-            </div>
+        
+                    <h4 style="margin-top: 20px; margin-bottom: 10px;">Caractéristiques dominantes</h4>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="characteristics" value="Vitesse" id="char1">
+                            <label for="char1">Vitesse</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="characteristics" value="Puissance physique" id="char2">
+                            <label for="char2">Puissance physique</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="characteristics" value="Technique pure" id="char3">
+                            <label for="char3">Technique pure</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="characteristics" value="QI basket élevé" id="char4">
+                            <label for="char4">QI basket élevé</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="characteristics" value="Adresse longue distance" id="char5">
+                            <label for="char5">Adresse longue distance</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="characteristics" value="Jeu dos au panier" id="char6">
+                            <label for="char6">Jeu dos au panier</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="characteristics" value="Défense élite" id="char7">
+                            <label for="char7">Défense élite</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="characteristics" value="Vision de jeu" id="char8">
+                            <label for="char8">Vision de jeu</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="characteristics" value="Leadership vocal" id="char9">
+                            <label for="char9">Leadership vocal</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="characteristics" value="Polyvalence" id="char10">
+                            <label for="char10">Polyvalence</label>
+                        </div>
+                    </div>
+                </div>
+        
+                <!-- Informations Médicales -->
+                <div class="form-section">
+                    <h3>Informations Médicales</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Groupe sanguin</label>
+                            <select name="bloodType">
+                                <option value="">Non renseigné</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Allergies connues</label>
+                            <input type="text" name="allergies" placeholder="Ex: Pollen, acariens...">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact d'urgence</label>
+                            <input type="tel" name="emergencyContact" placeholder="06 XX XX XX XX">
+                        </div>
+                        <div class="form-group">
+                            <label>Port de lunettes/lentilles</label>
+                            <select name="glasses">
+                                <option value="Non">Non</option>
+                                <option value="Lunettes">Lunettes</option>
+                                <option value="Lentilles">Lentilles</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+        
+                <button type="submit" class="btn-primary">Enregistrer la Joueuse</button>
+            </form>
+        </div>
 
             <!-- Evaluation Tab -->
             <div id="evaluation" class="tab-content">

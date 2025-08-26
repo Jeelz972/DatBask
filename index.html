@@ -493,13 +493,13 @@
                 <span class="basketball-icon">🏀</span>
                 Système de Suivi - Club Féminin de Basketball
             </h1>
-            <div class="nav-tabs">
-                <button class="tab-btn active" onclick="switchTab('dashboard')">Tableau de Bord</button>
-                <button class="tab-btn" onclick="switchTab('players')">Joueuses</button>
-                <button class="tab-btn" onclick="switchTab('addPlayer')">Nouvelle Joueuse</button>
-                <button class="tab-btn" onclick="switchTab('evaluation')">Évaluation</button>
-                <button class="tab-btn" onclick="switchTab('statistics')">Statistiques</button>
-                <button class="tab-btn" onclick="switchTab('history')">Historique</button>
+           <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchTab('dashboard', this)">Tableau de Bord</button>
+                <button class="tab-btn" onclick="switchTab('players', this)">Joueuses</button>
+                <button class="tab-btn" onclick="switchTab('addPlayer', this)">Nouvelle Joueuse</button>
+                <button class="tab-btn" onclick="switchTab('evaluation', this)">Évaluation</button>
+                <button class="tab-btn" onclick="switchTab('statistics', this)">Statistiques</button>
+                <button class="tab-btn" onclick="switchTab('history', this)">Historique</button>
             </div>
         </header>
 
@@ -1233,34 +1233,39 @@
         let modalRadarChart = null;
 
         // ==================== GESTION DES ONGLETS ====================
-        function switchTab(tabName) {
-            // Masquer tous les contenus d'onglets
-            const tabs = document.querySelectorAll('.tab-content');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            
-            // Masquer tous les boutons d'onglets
-            const buttons = document.querySelectorAll('.tab-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            
-            // Afficher l'onglet sélectionné
-            document.getElementById(tabName).classList.add('active');
-            
-            // Activer le bouton correspondant
-            event.target.classList.add('active');
-            
-            // Charger les données spécifiques à l'onglet
-            if (tabName === 'dashboard') {
-                loadDashboard();
-            } else if (tabName === 'players') {
-                loadPlayers();
-            } else if (tabName === 'evaluation') {
-                loadEvaluationPlayers();
-            } else if (tabName === 'statistics') {
-                loadStatisticsPlayers();
-            } else if (tabName === 'history') {
-                loadHistory();
-            }
-        }
+        function switchTab(tabName, buttonElement) {
+    // Masquer tous les contenus d'onglets
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Désactiver tous les boutons d'onglets
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    // Afficher l'onglet sélectionné
+    const targetTab = document.getElementById(tabName);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+    
+    // Activer le bouton correspondant
+    if (buttonElement) {
+        buttonElement.classList.add('active');
+    }
+    
+    // Charger les données spécifiques à l'onglet
+    if (tabName === 'dashboard') {
+        loadDashboard();
+    } else if (tabName === 'players') {
+        loadPlayers();
+    } else if (tabName === 'evaluation') {
+        loadEvaluationPlayers();
+    } else if (tabName === 'statistics') {
+        loadStatisticsPlayers();
+    } else if (tabName === 'history') {
+        loadHistory();
+    }
+}
 
         // ==================== FONCTIONS CRUD POUR LES JOUEUSES ====================
         function savePlayer(event) {
@@ -1315,8 +1320,8 @@
             alert(`Joueuse ${player.firstName} ${player.lastName} ajoutée avec succès!`);
             
             // Basculer vers l'onglet des joueuses
-            document.querySelector('.tab-btn').click();
-            document.querySelectorAll('.tab-btn')[1].click();
+            const playersButton = document.querySelectorAll('.tab-btn')[1];
+            switchTab('players', playersButton);
         }
 
    function loadPlayers() {

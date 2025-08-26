@@ -556,6 +556,24 @@
                         <option value="U18">U18</option>
                         <option value="Seniors">Seniors</option>
                     </select>
+                    <div class="search-bar">
+                    <input type="text" id="searchPlayer" placeholder="Rechercher une joueuse..." onkeyup="filterPlayers()">
+                    <select id="filterCategory" onchange="filterPlayers()">
+                        <option value="">Toutes les catégories</option>
+                        <option value="U15">U15</option>
+                        <option value="U18">U18</option>
+                        <option value="Seniors">Seniors</option>
+                        <option value="Reserve">Réserve</option>
+                        <option value="Blessée">Blessée</option>
+                    </select>
+                    <select id="filterTeam" onchange="filterPlayers()">
+                        <option value="">Toutes les équipes</option>
+                        <option value="Équipe 1">Équipe 1 - Championnat</option>
+                        <option value="Équipe 2">Équipe 2 - Réserve</option>
+                        <option value="Espoirs">Espoirs</option>
+                        <option value="Élite">Élite</option>
+                        <option value="Développement">Développement</option>
+                    </select>
                     <select id="filterPosition" onchange="filterPlayers()">
                         <option value="">Tous les postes</option>
                         <option value="Meneuse">Meneuse</option>
@@ -571,45 +589,33 @@
             </div>
 
             <!-- Add Player Tab -->
-            <div id="addPlayer" class="tab-content">
-                <h2>Ajouter une Nouvelle Joueuse</h2>
-                
-                <form id="playerForm" onsubmit="savePlayer(event)">
-                    <!-- Informations Personnelles -->
-                    <div class="form-section">
-                        <h3>Informations Personnelles</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Prénom *</label>
-                                <input type="text" name="firstName" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Nom *</label>
-                                <input type="text" name="lastName" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Date de naissance *</label>
-                                <input type="date" name="birthDate" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Numéro de maillot</label>
-                                <input type="number" name="number" min="0" max="99">
-                            </div>
-                            <div class="form-group">
-                                <label>Catégorie *</label>
-                                <select name="category" required>
-                                    <option value="">Sélectionner...</option>
-                                    <option value="U15">U15</option>
-                                    <option value="U18">U18</option>
-                                    <option value="Seniors">Seniors</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Date d'arrivée au club</label>
-                                <input type="date" name="joinDate">
-                            </div>
-                        </div>
-                    </div>
+            <!-- Dans la section Informations Personnelles, après le champ Catégorie -->
+<div class="form-group">
+    <label>Catégorie *</label>
+    <select name="category" required>
+        <option value="">Sélectionner...</option>
+        <option value="U11">U11</option>
+        <option value="U13">U13</option>
+        <option value="U15">U15</option>
+        <option value="U18">U18</option>
+        <option value="Seniors">Seniors</option>
+    </select>
+</div>
+<div class="form-group">
+    <label>Équipe actuelle *</label>
+    <select name="currentTeam" required>
+        <option value="">Sélectionner...</option>
+        <option value="Équipe 1">Équipe 1 - Championnat</option>
+        <option value="Équipe 2">Équipe 2 - Réserve</option>
+        <option value="Espoirs">Espoirs</option>
+        <option value="Élite">Élite</option>
+        <option value="Développement">Développement</option>
+    </select>
+</div>
+<div class="form-group">
+    <label>Date d'arrivée au club</label>
+    <input type="date" name="joinDate">
+</div>
 
                     <!-- Données Morphologiques -->
                     <div class="form-section">
@@ -1061,6 +1067,11 @@
                             <div class="stat-label">Moyenne Mentale</div>
                         </div>
                     </div>
+                    
+                    <h3 style="margin-top: 30px; color: #764ba2;">Répartition par Équipe</h3>
+                    <div class="stats-container" id="teamStats">
+                        <!-- Sera rempli dynamiquement -->
+                    </div>
 
                     <div class="form-section" style="margin-top: 30px;">
                         <h3>Graphique Radar des Compétences</h3>
@@ -1265,30 +1276,32 @@
             });
             
             const player = {
-                id: Date.now().toString(),
-                firstName: formData.get('firstName'),
-                lastName: formData.get('lastName'),
-                birthDate: formData.get('birthDate'),
-                number: formData.get('number') || null,
-                category: formData.get('category'),
-                joinDate: formData.get('joinDate'),
-                height: formData.get('height'),
-                weight: formData.get('weight'),
-                wingspan: formData.get('wingspan'),
-                verticalJump: formData.get('verticalJump'),
-                dominantHand: formData.get('dominantHand'),
-                shoeSize: formData.get('shoeSize'),
-                primaryPosition: formData.get('primaryPosition'),
-                secondaryPosition: formData.get('secondaryPosition'),
-                offensiveProfile: formData.get('offensiveProfile'),
-                defensiveProfile: formData.get('defensiveProfile'),
-                characteristics: characteristics,
-                bloodType: formData.get('bloodType'),
-                allergies: formData.get('allergies'),
-                emergencyContact: formData.get('emergencyContact'),
-                glasses: formData.get('glasses'),
-                createdAt: new Date().toISOString()
-            };
+    id: Date.now().toString(),
+    firstName: formData.get('firstName'),
+    lastName: formData.get('lastName'),
+    birthDate: formData.get('birthDate'),
+    number: formData.get('number') || null,
+    category: formData.get('category'),
+    currentCategory: formData.get('currentCategory'), // NOUVEAU
+    currentTeam: formData.get('currentTeam'), // NOUVEAU
+    joinDate: formData.get('joinDate'),
+    height: formData.get('height'),
+    weight: formData.get('weight'),
+    wingspan: formData.get('wingspan'),
+    verticalJump: formData.get('verticalJump'),
+    dominantHand: formData.get('dominantHand'),
+    shoeSize: formData.get('shoeSize'),
+    primaryPosition: formData.get('primaryPosition'),
+    secondaryPosition: formData.get('secondaryPosition'),
+    offensiveProfile: formData.get('offensiveProfile'),
+    defensiveProfile: formData.get('defensiveProfile'),
+    characteristics: characteristics,
+    bloodType: formData.get('bloodType'),
+    allergies: formData.get('allergies'),
+    emergencyContact: formData.get('emergencyContact'),
+    glasses: formData.get('glasses'),
+    createdAt: new Date().toISOString()
+};
             
             players.push(player);
             localStorage.setItem('basketballPlayers', JSON.stringify(players));
@@ -1306,58 +1319,62 @@
             document.querySelectorAll('.tab-btn')[1].click();
         }
 
-        function loadPlayers() {
-            const grid = document.getElementById('playersGrid');
-            
-            if (players.length === 0) {
-                grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Aucune joueuse enregistrée</p>';
-                return;
-            }
-            
-            grid.innerHTML = players.map(player => `
-                <div class="player-card" onclick="showPlayerProfile('${player.id}')">
-                    <span class="player-number">${player.number || '--'}</span>
-                    <h3>${player.firstName} ${player.lastName}</h3>
-                    <p class="player-info">📍 ${player.primaryPosition || 'Non défini'}</p>
-                    <p class="player-info">🏷️ ${player.category}</p>
-                    <p class="player-info">📏 ${player.height ? player.height + ' cm' : 'Non renseigné'}</p>
-                    <p class="player-info">🎂 ${calculateAge(player.birthDate)} ans</p>
-                </div>
-            `).join('');
-        }
+   function loadPlayers() {
+    const grid = document.getElementById('playersGrid');
+    
+    if (players.length === 0) {
+        grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Aucune joueuse enregistrée</p>';
+        return;
+    }
+    
+    grid.innerHTML = players.map(player => `
+        <div class="player-card" onclick="showPlayerProfile('${player.id}')">
+            <span class="player-number">${player.number || '--'}</span>
+            <h3>${player.firstName} ${player.lastName}</h3>
+            <p class="player-info">📍 ${player.primaryPosition || 'Non défini'}</p>
+            <p class="player-info">🏷️ ${player.currentCategory || player.category}</p>
+            <p class="player-info">👥 ${player.currentTeam || 'Non assignée'}</p>
+            <p class="player-info">📏 ${player.height ? player.height + ' cm' : 'Non renseigné'}</p>
+            <p class="player-info">🎂 ${calculateAge(player.birthDate)} ans</p>
+        </div>
+    `).join('');
+}
 
         function filterPlayers() {
-            const searchTerm = document.getElementById('searchPlayer').value.toLowerCase();
-            const categoryFilter = document.getElementById('filterCategory').value;
-            const positionFilter = document.getElementById('filterPosition').value;
-            
-            const filteredPlayers = players.filter(player => {
-                const fullName = `${player.firstName} ${player.lastName}`.toLowerCase();
-                const matchSearch = fullName.includes(searchTerm);
-                const matchCategory = !categoryFilter || player.category === categoryFilter;
-                const matchPosition = !positionFilter || player.primaryPosition === positionFilter;
-                
-                return matchSearch && matchCategory && matchPosition;
-            });
-            
-            const grid = document.getElementById('playersGrid');
-            
-            if (filteredPlayers.length === 0) {
-                grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Aucun résultat trouvé</p>';
-                return;
-            }
-            
-            grid.innerHTML = filteredPlayers.map(player => `
-                <div class="player-card" onclick="showPlayerProfile('${player.id}')">
-                    <span class="player-number">${player.number || '--'}</span>
-                    <h3>${player.firstName} ${player.lastName}</h3>
-                    <p class="player-info">📍 ${player.primaryPosition || 'Non défini'}</p>
-                    <p class="player-info">🏷️ ${player.category}</p>
-                    <p class="player-info">📏 ${player.height ? player.height + ' cm' : 'Non renseigné'}</p>
-                    <p class="player-info">🎂 ${calculateAge(player.birthDate)} ans</p>
-                </div>
-            `).join('');
-        }
+    const searchTerm = document.getElementById('searchPlayer').value.toLowerCase();
+    const categoryFilter = document.getElementById('filterCategory').value;
+    const teamFilter = document.getElementById('filterTeam').value;
+    const positionFilter = document.getElementById('filterPosition').value;
+    
+    const filteredPlayers = players.filter(player => {
+        const fullName = `${player.firstName} ${player.lastName}`.toLowerCase();
+        const matchSearch = fullName.includes(searchTerm);
+        const matchCategory = !categoryFilter || player.currentCategory === categoryFilter || player.category === categoryFilter;
+        const matchTeam = !teamFilter || player.currentTeam === teamFilter;
+        const matchPosition = !positionFilter || player.primaryPosition === positionFilter;
+        
+        return matchSearch && matchCategory && matchTeam && matchPosition;
+    });
+    
+    const grid = document.getElementById('playersGrid');
+    
+    if (filteredPlayers.length === 0) {
+        grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Aucun résultat trouvé</p>';
+        return;
+    }
+    
+    grid.innerHTML = filteredPlayers.map(player => `
+        <div class="player-card" onclick="showPlayerProfile('${player.id}')">
+            <span class="player-number">${player.number || '--'}</span>
+            <h3>${player.firstName} ${player.lastName}</h3>
+            <p class="player-info">📍 ${player.primaryPosition || 'Non défini'}</p>
+            <p class="player-info">🏷️ ${player.currentCategory || player.category}</p>
+            <p class="player-info">👥 ${player.currentTeam || 'Non assignée'}</p>
+            <p class="player-info">📏 ${player.height ? player.height + ' cm' : 'Non renseigné'}</p>
+            <p class="player-info">🎂 ${calculateAge(player.birthDate)} ans</p>
+        </div>
+    `).join('');
+}
 
         // ==================== SYSTÈME D'ÉVALUATION ====================
         function loadEvaluationPlayers() {
@@ -1824,8 +1841,9 @@
             document.getElementById('modalFullName').textContent = `${player.firstName} ${player.lastName}`;
             document.getElementById('modalNumber').textContent = player.number || '--';
             document.getElementById('modalPosition').textContent = player.primaryPosition + (player.secondaryPosition ? ` / ${player.secondaryPosition}` : '');
-            document.getElementById('modalCategory').textContent = player.category;
+            document.getElementById('modalCategory').textContent = `${player.currentCategory || player.category} (${player.currentTeam || 'Non assignée'})`;
             document.getElementById('modalAge').textContent = calculateAge(player.birthDate) + ' ans';
+            
             
             // Données morphologiques
             document.getElementById('modalHeight').textContent = player.height ? `${player.height} cm` : '--';
@@ -1924,13 +1942,15 @@
 
         // ==================== DASHBOARD ====================
         function loadDashboard() {
-            // Statistiques globales
+            // Statistiques globales existantes...
             document.getElementById('totalPlayers').textContent = players.length;
             
-            // Nombre de catégories uniques
-            const categories = [...new Set(players.map(p => p.category))];
-            document.getElementById('categories').textContent = categories.length;
-            
+            // Statistiques par équipe
+            const teamStats = {};
+            players.forEach(player => {
+                const team = player.currentTeam || 'Non assignée';
+                teamStats[team] = (teamStats[team] || 0) + 1;
+            });
             // Nombre total d'évaluations
             let totalEvals = 0;
             let totalRatings = 0;
@@ -1949,6 +1969,17 @@
             document.getElementById('evalCount').textContent = totalEvals;
             document.getElementById('avgRating').textContent = ratingCount > 0 ? 
                 (totalRatings / ratingCount).toFixed(1) : '0';
+
+            const teamStatsHTML = Object.entries(teamStats).map(([team, count]) => `
+            <div class="stat-card">
+                <div class="stat-value">${count}</div>
+                <div class="stat-label">${team}</div>
+            </div>
+            `).join('');
+        
+            if (document.getElementById('teamStats')) {
+                document.getElementById('teamStats').innerHTML = teamStatsHTML;
+            }
             
             // Dernières évaluations
             const recentEvals = [];

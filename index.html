@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi Joueuses Basketball - Club Féminin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #764ba2;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .basketball-icon {
+            font-size: 40px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: #764ba2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            background: #5a3785;
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: #ff6b6b;
+        }
+
+        .content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            min-height: 500enstoff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .player-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .player-card h3 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .player-info {
+            font-size: 14px;
+            margin: 5px 0;
+            opacity: 0.95;
+        }
+
+        .player-number {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 40px;
+            opacity: 0.3;
+            font-weight: bold;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .form-section h3 {
+            color: #764ba2;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #764ba2;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            background: #5a3785;
+            transform: translateY(-2px);
+        }
+
+        .evaluation-grid {
+            display: grid;
+            gap: 30px;
+        }
+
+        .skill-category {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .skill-category h4 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .skill-item {
+            display: grid;
+            grid-template-columns: 200px 1fr 80px;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .skill-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .skill-slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e0e0e0;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .skill-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #764ba2;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .skill-value {
+            background: #764ba2;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .history-table th {
+            background: #f8f9fa;
+            color: #764ba2;
+            font-weight: 600;
+        }
+
+        .history-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #ff9800;
+            color: white;
+        }
+
+        .badge-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-bar select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .close-modal {
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .profile-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .profile-photo {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        .profile-info h2 {
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+
+        .profile-detail {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .profile-detail strong {
+            color: #666;
+        }
+
+        .radar-chart {
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .players-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .skill-item {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <span class="basketball-icon">🏀</span>
+                Système de Suivi - Club Féminin de Basketball
+            </h1>
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchTab('dashboard')">Tableau de Bord</button>
+                <button class="tab-btn" onclick="switchTab('players')">Joueuses</button>
+                <button class="tab-btn" onclick="switchTab('addPlayer')">Nouvelle Joueuse</button>
+                <button class="tab-btn" onclick="switchTab('evaluation')">Évaluation</button>
+                <button class="tab-btn" onclick="switchTab('statistics')">Statistiques</button>
+                <button class="tab-btn" onclick="switchTab('history')">Historique</button>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <h2>Vue d'ensemble</h2>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPlayers">0</div>
+                        <div class="stat-label">Joueuses</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgRating">0</div>
+                        <div class="stat-label">Note Moyenne</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="evalCount">0</div>
+                        <div class="stat-label">Évaluations</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="categories">0</div>
+                        <div class="stat-label">Catégories</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px; color: #764ba2;">Dernières Évaluations</h3>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Joueuse</th>
+                            <th>Compétence</th>
+                            <th>Progression</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentEvaluations">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px;">Aucune évaluation récente</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Players List Tab -->
+            <div id="players" class="tab-content">
+                <h2>Liste des Joueuses</h2>
+                <div class="search-bar">
+                    <input type="text" id="searchPlayer" placeholder="Rechercher une joueuse..." onkeyup="filterPlayers()">
+                    <select id="filterCategory" onchange="filterPlayers()">
+                        <option value="">Toutes les catégories</option>
+                        <option value="U15">U15</option>
+                        <option value="U18">U18</option>
+                        <option value="Seniors">Seniors</option>
+                    </select>
+                    <select id="filterPosition" onchange="filterPlayers()">
+                        <option value="">Tous les postes</option>
+                        <option value="Meneuse">Meneuse</option>
+                        <option value="Arrière">Arrière</option>
+                        <option value="Ailière">Ailière</option>
+                        <option value="Ailière forte">Ailière forte</option>
+                        <option value="Pivot">Pivot</option>
+                    </select>
+                </div>
+                <div class="players-grid" id="playersGrid">
+                    <!-- Players will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Add Player Tab -->
+            <div id="addPlayer" class="tab-content">
+                <h2>Ajouter une Nouvelle Joueuse</h2>
+                
+                <form id="playerForm" onsubmit="savePlayer(event)">
+                    <!-- Informations Personnelles -->
+                    <div class="form-section">
+                        <h3>Informations Personnelles</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Prénom *</label>
+                                <input type="text" name="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nom *</label>
+                                <input type="text" name="lastName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Date de naissance *</label>
+                                <input type="date" name="birthDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Numéro de maillot</label>
+                                <input type="number" name="number" min="0" max="99">
+                            </div>
+                            <div class="form-group">
+                                <label>Catégorie *</label>
+                                <select name="category" required>
+                                    <option value="">Sélectionner...</option>
+                                    <option value="U15">U15</option>
+                                    <option value="U18">U18</option>
+                                    <option value="Seniors">Seniors</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Date d'arrivée au club</label>
+                                <input type="date" name="joinDate">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Données Morphologiques -->
+                    <div class="form-section">
+                        <h3>Données Morphologiques</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Taille (cm) *</label>
+                                <input type="number" name="height" min="140" max="220" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Poids (kg)</label>
+                                <input type="number" name="weight" min="40" max="150">
+                            </div>
+                            <div class="form-group">
+                                <label>Envergure (cm)</label>
+                                <input type="number" name="wingspan" min="140" max="250">
+                            </div>
+                            <div class="form-group">
+                                <label>Détente verticale (cm)</label>
+                                <input type="number" name="verticalJump" min="0" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Main dominante</label>
+                                <select name="dominantHand">
+                                    <option value="Droite">Droite</option>
+                                    <option value="Gauche">Gauche</option>
+                                    <option value="Ambidextre">Ambidextre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Pointure</label>
+                                <input type="number" name="shoeSize" min="35" max="50" step="0.5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profil de Jeu -->
+                    <div class="form-section">
+                        <h3>Profil de Jeu</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Poste principal *</label>
+                                <select name="primaryPosition" required>
+                                    <option value="">Sélectionner...</option>
+                                    <option value="Meneuse">Meneuse (1)</option>
+                                    <option value="Arrière">Arrière (2)</option>
+                                    <option value="Ailière">Ailière (3)</option>
+                                    <option value="Ailière forte">Ailière forte (4)</option>
+                                    <option value="Pivot">Pivot (5)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Poste secondaire</label>
+                                <select name="secondaryPosition">
+                                    <option value="">Aucun</option>
+                                    <option value="Meneuse">Meneuse (1)</option>
+                                    <option value="Arrière">Arrière (2)</option>
+                                    <option value="Ailière">Ailière (3)</option>
+                                    <option value="Ailière forte">Ailière forte (4)</option>
+                                    <option value="Pivot">Pivot (5)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Profil offensif</label>
+                                <select name="offensiveProfile">
+                                    <option value="">Sélectionner...</option>
+                                    <option value="Scoreuse intérieure">Scoreuse intérieure</option>
+                                    <option value="Scoreuse extérieure">Scoreuse extérieure</option>
+                                    <option value="Créatrice">Créatrice/Facilitatrice</option>
+                                    <option value="Shooteuse">Shooteuse</option>
+                                    <option value="Slasheuse">Slasheuse</option>
+                                    <option value="Post-up player">Post-up player</option>
+                                    <option value="Catch & shoot">Catch & shoot</option>
+                                    <option value="Polyvalente">Polyvalente</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Profil défensif</label>
+                                <select name="defensiveProfile">
+                                    <option value="">Sélectionner...</option>
+                                    <option value="Lock defender">Lock defender</option>
+                                    <option value="Rim protector">Rim protector</option>
+                                    <option value="Défenseuse périmètre">Défenseuse périmètre</option>
+                                    <option value="Voleuse de ballon">Voleuse de ballon</option>
+                                    <option value="Rebondeuse">Rebondeuse</option>
+                                    <option value="Polyvalente">Défenseuse polyvalente</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h4 style="margin-top: 20px; margin-bottom: 10px;">Caractéristiques dominantes</h4>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="characteristics" value="Vitesse" id="char1">
+                                <label for="char1">Vitesse</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="characteristics" value="Puissance physique" id="char2">
+                                <label for="char2">Puissance physique</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="characteristics" value="Technique pure" id="char3">
+                                <label for="char3">Technique pure</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="characteristics" value="QI basket élevé" id="char4">
+                                <label for="char4">QI basket élevé</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="characteristics" value="Adresse longue distance" id="char5">
+                                <label for="char5">Adresse longue distance</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="characteristics" value="Jeu dos au panier" id="char6">
+                                <label for="char6">Jeu dos au panier</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="characteristics" value="Défense élite" id="char7">
+                                <label for="char7">Défense élite</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="characteristics" value="Vision de jeu" id="char8">
+                                <label for="char8">Vision de jeu</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="characteristics" value="Leadership vocal" id="char9">
+                                <label for="char9">Leadership vocal</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="characteristics" value="Polyvalence" id="char10">
+                                <label for="char10">Polyvalence</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations Médicales -->
+                    <div class="form-section">
+                        <h3>Informations Médicales</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Groupe sanguin</label>
+                                <select name="bloodType">
+                                    <option value="">Non renseigné</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Allergies connues</label>
+                                <input type="text" name="allergies" placeholder="Ex: Pollen, acariens...">
+                            </div>
+                            <div class="form-group">
+                                <label>Contact d'urgence</label>
+                                <input type="tel" name="emergencyContact" placeholder="06 XX XX XX XX">
+                            </div>
+                            <div class="form-group">
+                                <label>Port de lunettes/lentilles</label>
+                                <select name="glasses">
+                                    <option value="Non">Non</option>
+                                    <option value="Lunettes">Lunettes</option>
+                                    <option value="Lentilles">Lentilles</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Enregistrer la Joueuse</button>
+                </form>
+            </div>
+
+            <!-- Evaluation Tab -->
+            <div id="evaluation" class="tab-content">
+                <h2>Évaluation des Compétences</h2>
+                
+                <div class="form-section">
+                    <div class="form-group">
+                        <label>Sélectionner une joueuse</label>
+                        <select id="playerSelect" onchange="loadPlayerEvaluation()">
+                            <option value="">Choisir une joueuse...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="evaluationForm" style="display: none;">
+                    <div class="evaluation-grid">
+                        <!-- Compétences Offensives -->
+                        <div class="skill-category">
+                            <h4>🎯 Tir et Finition</h4>
+                            <div class="skill-item">
+                                <span class="skill-name">Tir mi-distance</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="midRangeShot">
+                                <span class="skill-value" id="midRangeShotValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Tir après dribble</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="pullUpShot">
+                                <span class="skill-value" id="pullUpShotValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Tir à 3 points</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="threePointer">
+                                <span class="skill-value" id="threePointerValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Lay-up main droite</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="layupRight">
+                                <span class="skill-value" id="layupRightValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Lay-up main gauche</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="layupLeft">
+                                <span class="skill-value" id="layupLeftValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Lancer franc</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="freeThrow">
+                                <span class="skill-value" id="freeThrowValue">5</span>
+                            </div>
+                        </div>
+
+                       <!-- Dribble et Création -->
+                        <div class="skill-category">
+                            <h4>🏀 Dribble et Création</h4>
+                            <div class="skill-item">
+                                <span class="skill-name">Dribble main droite</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="dribbleRight">
+                                <span class="skill-value" id="dribbleRightValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Dribble main gauche</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="dribbleLeft">
+                                <span class="skill-value" id="dribbleLeftValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Changement de direction</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="changeDirection">
+                                <span class="skill-value" id="changeDirectionValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Pénétration</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="penetration">
+                                <span class="skill-value" id="penetrationValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Création pour soi</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="createOwnShot">
+                                <span class="skill-value" id="createOwnShotValue">5</span>
+                            </div>
+                        </div>
+
+                        <!-- Passe et Vision de Jeu -->
+                        <div class="skill-category">
+                            <h4>👁️ Passe et Vision de Jeu</h4>
+                            <div class="skill-item">
+                                <span class="skill-name">Passe courte</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="shortPass">
+                                <span class="skill-value" id="shortPassValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Passe longue</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="longPass">
+                                <span class="skill-value" id="longPassValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Vision périphérique</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="peripheralVision">
+                                <span class="skill-value" id="peripheralVisionValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Lecture du jeu</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="gameReading">
+                                <span class="skill-value" id="gameReadingValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Création pour les autres</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="createForOthers">
+                                <span class="skill-value" id="createForOthersValue">5</span>
+                            </div>
+                        </div>
+
+                        <!-- Compétences Défensives -->
+                        <div class="skill-category">
+                            <h4>🛡️ Compétences Défensives</h4>
+                            <div class="skill-item">
+                                <span class="skill-name">Défense individuelle</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="manDefense">
+                                <span class="skill-value" id="manDefenseValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Aide défensive</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="helpDefense">
+                                <span class="skill-value" id="helpDefenseValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Interception</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="steal">
+                                <span class="skill-value" id="stealValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Contre</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="block">
+                                <span class="skill-value" id="blockValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Rebond défensif</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="defensiveRebound">
+                                <span class="skill-value" id="defensiveReboundValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Communication défensive</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="defensiveCommunication">
+                                <span class="skill-value" id="defensiveCommunicationValue">5</span>
+                            </div>
+                        </div>
+
+                        <!-- Aspects Physiques -->
+                        <div class="skill-category">
+                            <h4>💪 Aspects Physiques</h4>
+                            <div class="skill-item">
+                                <span class="skill-name">Vitesse</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="speed">
+                                <span class="skill-value" id="speedValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Explosivité</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="explosiveness">
+                                <span class="skill-value" id="explosivenessValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Agilité</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="agility">
+                                <span class="skill-value" id="agilityValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Force</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="strength">
+                                <span class="skill-value" id="strengthValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Endurance</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="endurance">
+                                <span class="skill-value" id="enduranceValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Coordination</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="coordination">
+                                <span class="skill-value" id="coordinationValue">5</span>
+                            </div>
+                        </div>
+
+                        <!-- Aspects Mentaux -->
+                        <div class="skill-category">
+                            <h4>🧠 Aspects Mentaux</h4>
+                            <div class="skill-item">
+                                <span class="skill-name">Concentration</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="concentration">
+                                <span class="skill-value" id="concentrationValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Leadership</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="leadership">
+                                <span class="skill-value" id="leadershipValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Esprit d'équipe</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="teamSpirit">
+                                <span class="skill-value" id="teamSpiritValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Gestion de la pression</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="pressureManagement">
+                                <span class="skill-value" id="pressureManagementValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Combativité</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="fighting">
+                                <span class="skill-value" id="fightingValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Discipline tactique</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="tacticalDiscipline">
+                                <span class="skill-value" id="tacticalDisciplineValue">5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section" style="margin-top: 30px;">
+                        <h3>Observations et Commentaires</h3>
+                        <div class="form-group">
+                            <label>Notes de l'entraîneur</label>
+                            <textarea id="coachNotes" rows="4" style="width: 100%; resize: vertical;" placeholder="Points forts, axes d'amélioration, observations particulières..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Objectifs à court terme</label>
+                            <textarea id="shortTermGoals" rows="3" style="width: 100%; resize: vertical;" placeholder="Objectifs pour les prochaines semaines..."></textarea>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-primary" onclick="saveEvaluation()">Enregistrer l'Évaluation</button>
+                </div>
+            </div>
+
+            <!-- Statistics Tab -->
+            <div id="statistics" class="tab-content">
+                <h2>Statistiques et Analyses</h2>
+                
+                <div class="form-section">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Sélectionner une joueuse</label>
+                            <select id="statsPlayerSelect" onchange="loadPlayerStats()">
+                                <option value="">Toutes les joueuses</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Période</label>
+                            <select id="statsPeriod" onchange="loadPlayerStats()">
+                                <option value="all">Toute la saison</option>
+                                <option value="month">Dernier mois</option>
+                                <option value="3months">3 derniers mois</option>
+                                <option value="6months">6 derniers mois</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="statsContent" style="display: none;">
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-value" id="avgOffensive">0</div>
+                            <div class="stat-label">Moyenne Offensive</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="avgDefensive">0</div>
+                            <div class="stat-label">Moyenne Défensive</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="avgPhysical">0</div>
+                            <div class="stat-label">Moyenne Physique</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="avgMental">0</div>
+                            <div class="stat-label">Moyenne Mentale</div>
+                        </div>
+                    </div>
+
+                    <div class="form-section" style="margin-top: 30px;">
+                        <h3>Graphique Radar des Compétences</h3>
+                        <canvas id="radarChart" class="radar-chart"></canvas>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Évolution dans le Temps</h3>
+                        <canvas id="progressChart" style="width: 100%; height: 300px;"></canvas>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Points Forts / Points Faibles</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <h4 style="color: #4caf50; margin-bottom: 15px;">✅ Top 5 Compétences</h4>
+                                <div id="topSkills"></div>
+                            </div>
+                            <div>
+                                <h4 style="color: #f44336; margin-bottom: 15px;">⚠️ Axes d'Amélioration</h4>
+                                <div id="weakSkills"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="history" class="tab-content">
+                <h2>Historique des Modifications</h2>
+                
+                <div class="search-bar">
+                    <input type="text" id="searchHistory" placeholder="Rechercher dans l'historique..." onkeyup="filterHistory()">
+                    <select id="filterHistoryType" onchange="filterHistory()">
+                        <option value="">Tous les types</option>
+                        <option value="creation">Création</option>
+                        <option value="evaluation">Évaluation</option>
+                        <option value="modification">Modification</option>
+                        <option value="suppression">Suppression</option>
+                    </select>
+                    <input type="date" id="filterHistoryDate" onchange="filterHistory()">
+                </div>
+
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date & Heure</th>
+                            <th>Type</th>
+                            <th>Joueuse</th>
+                            <th>Description</th>
+                            <th>Utilisateur</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px;">Aucun historique disponible</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Profile Modal -->
+    <div id="playerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalPlayerName">Profil de la Joueuse</h2>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <div class="profile-header">
+                <div class="profile-photo" id="modalPlayerPhoto">
+                    <span id="modalPlayerInitials">--</span>
+                </div>
+                <div class="profile-info">
+                    <h2 id="modalFullName">--</h2>
+                    <div class="profile-detail">
+                        <strong>Numéro:</strong>
+                        <span id="modalNumber">--</span>
+                    </div>
+                    <div class="profile-detail">
+                        <strong>Poste:</strong>
+                        <span id="modalPosition">--</span>
+                    </div>
+                    <div class="profile-detail">
+                        <strong>Catégorie:</strong>
+                        <span id="modalCategory">--</span>
+                    </div>
+                    <div class="profile-detail">
+                        <strong>Âge:</strong>
+                        <span id="modalAge">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Données Morphologiques</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div class="profile-detail">
+                        <strong>Taille:</strong>
+                        <span id="modalHeight">--</span>
+                    </div>
+                    <div class="profile-detail">
+                        <strong>Poids:</strong>
+                        <span id="modalWeight">--</span>
+                    </div>
+                    <div class="profile-detail">
+                        <strong>Envergure:</strong>
+                        <span id="modalWingspan">--</span>
+                    </div>
+                    <div class="profile-detail">
+                        <strong>Détente:</strong>
+                        <span id="modalVertical">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Profil de Jeu</h3>
+                <div class="profile-detail">
+                    <strong>Profil Offensif:</strong>
+                    <span id="modalOffensive">--</span>
+                </div>
+                <div class="profile-detail">
+                    <strong>Profil Défensif:</strong>
+                    <span id="modalDefensive">--</span>
+                </div>
+                <div class="profile-detail">
+                    <strong>Caractéristiques:</strong>
+                    <span id="modalCharacteristics">--</span>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Dernière Évaluation</h3>
+                <canvas id="modalRadarChart" style="width: 100%; max-width: 400px; margin: 0 auto;"></canvas>
+                <p style="text-align: center; margin-top: 15px; color: #666;">
+                    Note globale: <strong id="modalGlobalRating">--</strong>/10
+                </p>
+            </div>
+
+            <div class="form-section">
+                <h3>Notes et Observations</h3>
+                <p id="modalNotes" style="color: #666;">Aucune note disponible</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // ==================== DONNÉES ET VARIABLES GLOBALES ====================
+        let players = JSON.parse(localStorage.getItem('basketballPlayers')) || [];
+        let evaluations = JSON.parse(localStorage.getItem('playerEvaluations')) || {};
+        let history = JSON.parse(localStorage.getItem('historyLog')) || [];
+        let currentPlayerId = null;
+        let radarChart = null;
+        let progressChart = null;
+        let modalRadarChart = null;
+
+        // ==================== GESTION DES ONGLETS ====================
+        function switchTab(tabName) {
+            // Masquer tous les contenus d'onglets
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Masquer tous les boutons d'onglets
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Afficher l'onglet sélectionné
+            document.getElementById(tabName).classList.add('active');
+            
+            // Activer le bouton correspondant
+            event.target.classList.add('active');
+            
+            // Charger les données spécifiques à l'onglet
+            if (tabName === 'dashboard') {
+                loadDashboard();
+            } else if (tabName === 'players') {
+                loadPlayers();
+            } else if (tabName === 'evaluation') {
+                loadEvaluationPlayers();
+            } else if (tabName === 'statistics') {
+                loadStatisticsPlayers();
+            } else if (tabName === 'history') {
+                loadHistory();
+            }
+        }
+
+        // ==================== FONCTIONS CRUD POUR LES JOUEUSES ====================
+        function savePlayer(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // Récupérer les caractéristiques cochées
+            const characteristics = [];
+            document.querySelectorAll('input[name="characteristics"]:checked').forEach(cb => {
+                characteristics.push(cb.value);
+            });
+            
+            const player = {
+                id: Date.now().toString(),
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                birthDate: formData.get('birthDate'),
+                number: formData.get('number') || null,
+                category: formData.get('category'),
+                joinDate: formData.get('joinDate'),
+                height: formData.get('height'),
+                weight: formData.get('weight'),
+                wingspan: formData.get('wingspan'),
+                verticalJump: formData.get('verticalJump'),
+                dominantHand: formData.get('dominantHand'),
+                shoeSize: formData.get('shoeSize'),
+                primaryPosition: formData.get('primaryPosition'),
+                secondaryPosition: formData.get('secondaryPosition'),
+                offensiveProfile: formData.get('offensiveProfile'),
+                defensiveProfile: formData.get('defensiveProfile'),
+                characteristics: characteristics,
+                bloodType: formData.get('bloodType'),
+                allergies: formData.get('allergies'),
+                emergencyContact: formData.get('emergencyContact'),
+                glasses: formData.get('glasses'),
+                createdAt: new Date().toISOString()
+            };
+            
+            players.push(player);
+            localStorage.setItem('basketballPlayers', JSON.stringify(players));
+            
+            // Ajouter à l'historique
+            addToHistory('creation', player, 'Nouvelle joueuse ajoutée');
+            
+            // Réinitialiser le formulaire
+            form.reset();
+            
+            alert(`Joueuse ${player.firstName} ${player.lastName} ajoutée avec succès!`);
+            
+            // Basculer vers l'onglet des joueuses
+            document.querySelector('.tab-btn').click();
+            document.querySelectorAll('.tab-btn')[1].click();
+        }
+
+        function loadPlayers() {
+            const grid = document.getElementById('playersGrid');
+            
+            if (players.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Aucune joueuse enregistrée</p>';
+                return;
+            }
+            
+            grid.innerHTML = players.map(player => `
+                <div class="player-card" onclick="showPlayerProfile('${player.id}')">
+                    <span class="player-number">${player.number || '--'}</span>
+                    <h3>${player.firstName} ${player.lastName}</h3>
+                    <p class="player-info">📍 ${player.primaryPosition || 'Non défini'}</p>
+                    <p class="player-info">🏷️ ${player.category}</p>
+                    <p class="player-info">📏 ${player.height ? player.height + ' cm' : 'Non renseigné'}</p>
+                    <p class="player-info">🎂 ${calculateAge(player.birthDate)} ans</p>
+                </div>
+            `).join('');
+        }
+
+        function filterPlayers() {
+            const searchTerm = document.getElementById('searchPlayer').value.toLowerCase();
+            const categoryFilter = document.getElementById('filterCategory').value;
+            const positionFilter = document.getElementById('filterPosition').value;
+            
+            const filteredPlayers = players.filter(player => {
+                const fullName = `${player.firstName} ${player.lastName}`.toLowerCase();
+                const matchSearch = fullName.includes(searchTerm);
+                const matchCategory = !categoryFilter || player.category === categoryFilter;
+                const matchPosition = !positionFilter || player.primaryPosition === positionFilter;
+                
+                return matchSearch && matchCategory && matchPosition;
+            });
+            
+            const grid = document.getElementById('playersGrid');
+            
+            if (filteredPlayers.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Aucun résultat trouvé</p>';
+                return;
+            }
+            
+            grid.innerHTML = filteredPlayers.map(player => `
+                <div class="player-card" onclick="showPlayerProfile('${player.id}')">
+                    <span class="player-number">${player.number || '--'}</span>
+                    <h3>${player.firstName} ${player.lastName}</h3>
+                    <p class="player-info">📍 ${player.primaryPosition || 'Non défini'}</p>
+                    <p class="player-info">🏷️ ${player.category}</p>
+                    <p class="player-info">📏 ${player.height ? player.height + ' cm' : 'Non renseigné'}</p>
+                    <p class="player-info">🎂 ${calculateAge(player.birthDate)} ans</p>
+                </div>
+            `).join('');
+        }
+
+        // ==================== SYSTÈME D'ÉVALUATION ====================
+        function loadEvaluationPlayers() {
+            const select = document.getElementById('playerSelect');
+            select.innerHTML = '<option value="">Choisir une joueuse...</option>';
+            
+            players.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player.id;
+                option.textContent = `${player.firstName} ${player.lastName} (#${player.number || '--'})`;
+                select.appendChild(option);
+            });
+        }
+
+        function loadPlayerEvaluation() {
+            const playerId = document.getElementById('playerSelect').value;
+            
+            if (!playerId) {
+                document.getElementById('evaluationForm').style.display = 'none';
+                return;
+            }
+            
+            currentPlayerId = playerId;
+            document.getElementById('evaluationForm').style.display = 'block';
+            
+            // Charger les évaluations existantes si disponibles
+            if (evaluations[playerId] && evaluations[playerId].length > 0) {
+                const lastEval = evaluations[playerId][evaluations[playerId].length - 1];
+                
+                // Restaurer toutes les valeurs des sliders
+                Object.keys(lastEval.skills).forEach(skillId => {
+                    const slider = document.getElementById(skillId);
+                    if (slider) {
+                        slider.value = lastEval.skills[skillId];
+                        document.getElementById(skillId + 'Value').textContent = lastEval.skills[skillId];
+                    }
+                });
+                
+                // Restaurer les commentaires
+                if (lastEval.coachNotes) {
+                    document.getElementById('coachNotes').value = lastEval.coachNotes;
+                }
+                if (lastEval.shortTermGoals) {
+                    document.getElementById('shortTermGoals').value = lastEval.shortTermGoals;
+                }
+            }
+        }
+
+        function saveEvaluation() {
+            if (!currentPlayerId) {
+                alert('Veuillez sélectionner une joueuse');
+                return;
+            }
+            
+            const player = players.find(p => p.id === currentPlayerId);
+            
+            const skills = {
+                // Tir et Finition
+                midRangeShot: parseInt(document.getElementById('midRangeShot').value),
+                pullUpShot: parseInt(document.getElementById('pullUpShot').value),
+                threePointer: parseInt(document.getElementById('threePointer').value),
+                layupRight: parseInt(document.getElementById('layupRight').value),
+                layupLeft: parseInt(document.getElementById('layupLeft').value),
+                freeThrow: parseInt(document.getElementById('freeThrow').value),
+                
+                // Dribble et Création
+                dribbleRight: parseInt(document.getElementById('dribbleRight').value),
+                dribbleLeft: parseInt(document.getElementById('dribbleLeft').value),
+                changeDirection: parseInt(document.getElementById('changeDirection').value),
+                penetration: parseInt(document.getElementById('penetration').value),
+                createOwnShot: parseInt(document.getElementById('createOwnShot').value),
+                
+                // Passe et Vision
+                shortPass: parseInt(document.getElementById('shortPass').value),
+                longPass: parseInt(document.getElementById('longPass').value),
+                peripheralVision: parseInt(document.getElementById('peripheralVision').value),
+                gameReading: parseInt(document.getElementById('gameReading').value),
+                createForOthers: parseInt(document.getElementById('createForOthers').value),
+                
+                // Défense
+                manDefense: parseInt(document.getElementById('manDefense').value),
+                helpDefense: parseInt(document.getElementById('helpDefense').value),
+                steal: parseInt(document.getElementById('steal').value),
+                block: parseInt(document.getElementById('block').value),
+                defensiveRebound: parseInt(document.getElementById('defensiveRebound').value),
+                defensiveCommunication: parseInt(document.getElementById('defensiveCommunication').value),
+                
+                // Physique
+                speed: parseInt(document.getElementById('speed').value),
+                explosiveness: parseInt(document.getElementById('explosiveness').value),
+                agility: parseInt(document.getElementById('agility').value),
+                strength: parseInt(document.getElementById('strength').value),
+                endurance: parseInt(document.getElementById('endurance').value),
+                coordination: parseInt(document.getElementById('coordination').value),
+// Mental
+                concentration: parseInt(document.getElementById('concentration').value),
+                leadership: parseInt(document.getElementById('leadership').value),
+                teamSpirit: parseInt(document.getElementById('teamSpirit').value),
+                pressureManagement: parseInt(document.getElementById('pressureManagement').value),
+                fighting: parseInt(document.getElementById('fighting').value),
+                tacticalDiscipline: parseInt(document.getElementById('tacticalDiscipline').value)
+            };
+            
+            const evaluation = {
+                id: Date.now().toString(),
+                playerId: currentPlayerId,
+                skills: skills,
+                coachNotes: document.getElementById('coachNotes').value,
+                shortTermGoals: document.getElementById('shortTermGoals').value,
+                date: new Date().toISOString(),
+                globalRating: calculateGlobalRating(skills)
+            };
+            
+            // Sauvegarder l'évaluation
+            if (!evaluations[currentPlayerId]) {
+                evaluations[currentPlayerId] = [];
+            }
+            evaluations[currentPlayerId].push(evaluation);
+            localStorage.setItem('playerEvaluations', JSON.stringify(evaluations));
+            
+            // Ajouter à l'historique
+            addToHistory('evaluation', player, `Évaluation complétée - Note globale: ${evaluation.globalRating}/10`);
+            
+            alert(`Évaluation enregistrée pour ${player.firstName} ${player.lastName}\nNote globale: ${evaluation.globalRating}/10`);
+        }
+
+        // ==================== STATISTIQUES ====================
+        function loadStatisticsPlayers() {
+            const select = document.getElementById('statsPlayerSelect');
+            select.innerHTML = '<option value="">Toutes les joueuses</option>';
+            
+            players.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player.id;
+                option.textContent = `${player.firstName} ${player.lastName} (#${player.number || '--'})`;
+                select.appendChild(option);
+            });
+        }
+
+        function loadPlayerStats() {
+            const playerId = document.getElementById('statsPlayerSelect').value;
+            const period = document.getElementById('statsPeriod').value;
+            
+            if (!playerId) {
+                document.getElementById('statsContent').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('statsContent').style.display = 'block';
+            
+            const playerEvals = evaluations[playerId] || [];
+            if (playerEvals.length === 0) {
+                document.getElementById('statsContent').innerHTML = '<p style="text-align: center; padding: 40px;">Aucune évaluation disponible pour cette joueuse</p>';
+                return;
+            }
+            
+            // Filtrer selon la période
+            const now = new Date();
+            const filteredEvals = playerEvals.filter(eval => {
+                const evalDate = new Date(eval.date);
+                switch(period) {
+                    case 'month':
+                        return (now - evalDate) <= 30 * 24 * 60 * 60 * 1000;
+                    case '3months':
+                        return (now - evalDate) <= 90 * 24 * 60 * 60 * 1000;
+                    case '6months':
+                        return (now - evalDate) <= 180 * 24 * 60 * 60 * 1000;
+                    default:
+                        return true;
+                }
+            });
+            
+            if (filteredEvals.length === 0) {
+                document.getElementById('statsContent').innerHTML = '<p style="text-align: center; padding: 40px;">Aucune évaluation dans la période sélectionnée</p>';
+                return;
+            }
+            
+            // Récupérer la dernière évaluation
+            const lastEval = filteredEvals[filteredEvals.length - 1];
+            
+            // Calculer les moyennes par catégorie
+            const offensiveAvg = calculateCategoryAverage(lastEval.skills, ['midRangeShot', 'pullUpShot', 'threePointer', 'layupRight', 'layupLeft', 'freeThrow', 'dribbleRight', 'dribbleLeft', 'changeDirection', 'penetration', 'createOwnShot']);
+            const defensiveAvg = calculateCategoryAverage(lastEval.skills, ['manDefense', 'helpDefense', 'steal', 'block', 'defensiveRebound', 'defensiveCommunication']);
+            const physicalAvg = calculateCategoryAverage(lastEval.skills, ['speed', 'explosiveness', 'agility', 'strength', 'endurance', 'coordination']);
+            const mentalAvg = calculateCategoryAverage(lastEval.skills, ['concentration', 'leadership', 'teamSpirit', 'pressureManagement', 'fighting', 'tacticalDiscipline']);
+            
+            // Mettre à jour les cartes de statistiques
+            document.getElementById('avgOffensive').textContent = offensiveAvg.toFixed(1);
+            document.getElementById('avgDefensive').textContent = defensiveAvg.toFixed(1);
+            document.getElementById('avgPhysical').textContent = physicalAvg.toFixed(1);
+            document.getElementById('avgMental').textContent = mentalAvg.toFixed(1);
+            
+            // Créer le graphique radar
+            createRadarChart(lastEval.skills);
+            
+            // Créer le graphique de progression
+            createProgressChart(filteredEvals);
+            
+            // Afficher les points forts et faibles
+            displayStrengthsWeaknesses(lastEval.skills);
+        }
+
+        function calculateCategoryAverage(skills, categoryKeys) {
+            const values = categoryKeys.map(key => skills[key] || 0);
+            return values.reduce((a, b) => a + b, 0) / values.length;
+        }
+
+        function createRadarChart(skills) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            if (radarChart) {
+                radarChart.destroy();
+            }
+            
+            const categories = {
+                'Tir': ['midRangeShot', 'threePointer', 'freeThrow'],
+                'Dribble': ['dribbleRight', 'dribbleLeft', 'changeDirection'],
+                'Passe': ['shortPass', 'longPass', 'createForOthers'],
+                'Défense': ['manDefense', 'steal', 'defensiveRebound'],
+                'Physique': ['speed', 'strength', 'endurance'],
+                'Mental': ['concentration', 'leadership', 'pressureManagement']
+            };
+            
+            const data = Object.keys(categories).map(cat => {
+                const catSkills = categories[cat];
+                return calculateCategoryAverage(skills, catSkills);
+            });
+            
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: Object.keys(categories),
+                    datasets: [{
+                        label: 'Compétences',
+                        data: data,
+                        backgroundColor: 'rgba(118, 75, 162, 0.2)',
+                        borderColor: '#764ba2',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#764ba2',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#764ba2'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function createProgressChart(evals) {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            
+            if (progressChart) {
+                progressChart.destroy();
+            }
+            
+            const dates = evals.map(e => formatDate(e.date));
+            const ratings = evals.map(e => e.globalRating);
+            
+            progressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Note globale',
+                        data: ratings,
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayStrengthsWeaknesses(skills) {
+            const skillArray = Object.entries(skills).map(([key, value]) => ({
+                name: getSkillDisplayName(key),
+                value: value
+            }));
+            
+            skillArray.sort((a, b) => b.value - a.value);
+            
+            const topSkills = skillArray.slice(0, 5);
+            const weakSkills = skillArray.slice(-5).reverse();
+            
+            document.getElementById('topSkills').innerHTML = topSkills.map(skill => `
+                <div style="margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${skill.name}</span>
+                        <span class="badge badge-success">${skill.value}/10</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('weakSkills').innerHTML = weakSkills.map(skill => `
+                <div style="margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${skill.name}</span>
+                        <span class="badge badge-danger">${skill.value}/10</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getSkillDisplayName(skillId) {
+            const names = {
+                midRangeShot: 'Tir mi-distance',
+                pullUpShot: 'Tir après dribble',
+                threePointer: 'Tir à 3 points',
+                layupRight: 'Lay-up main droite',
+                layupLeft: 'Lay-up main gauche',
+                freeThrow: 'Lancer franc',
+                dribbleRight: 'Dribble main droite',
+                dribbleLeft: 'Dribble main gauche',
+                changeDirection: 'Changement de direction',
+                penetration: 'Pénétration',
+                createOwnShot: 'Création pour soi',
+                shortPass: 'Passe courte',
+                longPass: 'Passe longue',
+                peripheralVision: 'Vision périphérique',
+                gameReading: 'Lecture du jeu',
+                createForOthers: 'Création pour les autres',
+                manDefense: 'Défense individuelle',
+                helpDefense: 'Aide défensive',
+                steal: 'Interception',
+                block: 'Contre',
+                defensiveRebound: 'Rebond défensif',
+                defensiveCommunication: 'Communication défensive',
+                speed: 'Vitesse',
+                explosiveness: 'Explosivité',
+                agility: 'Agilité',
+                strength: 'Force',
+                endurance: 'Endurance',
+                coordination: 'Coordination',
+                concentration: 'Concentration',
+                leadership: 'Leadership',
+                teamSpirit: 'Esprit d\'équipe',
+                pressureManagement: 'Gestion de la pression',
+                fighting: 'Combativité',
+                tacticalDiscipline: 'Discipline tactique'
+            };
+            return names[skillId] || skillId;
+        }
+
+        // ==================== HISTORIQUE ====================
+        function addToHistory(type, player, description) {
+            const entry = {
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                type: type,
+                playerName: player ? `${player.firstName} ${player.lastName}` : 'N/A',
+                playerId: player ? player.id : null,
+                description: description,
+                user: 'Coach' // Pourrait être dynamique avec un système d'authentification
+            };
+            
+            history.push(entry);
+            localStorage.setItem('historyLog', JSON.stringify(history));
+        }
+
+        function loadHistory() {
+            displayHistory(history);
+        }
+
+        function displayHistory(entries) {
+            const tbody = document.getElementById('historyTable');
+            
+            if (entries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Aucun historique disponible</td></tr>';
+                return;
+            }
+            
+            // Trier par date décroissante
+            entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            tbody.innerHTML = entries.map(entry => {
+                let badgeClass = '';
+                switch(entry.type) {
+                    case 'creation':
+                        badgeClass = 'badge-success';
+                        break;
+                    case 'evaluation':
+                        badgeClass = 'badge-warning';
+                        break;
+                    case 'modification':
+                        badgeClass = 'badge-warning';
+                        break;
+                    case 'suppression':
+                        badgeClass = 'badge-danger';
+                        break;
+                }
+                
+                return `
+                    <tr>
+                        <td>${formatDateTime(entry.date)}</td>
+                        <td><span class="badge ${badgeClass}">${entry.type}</span></td>
+                        <td>${entry.playerName}</td>
+                        <td>${entry.description}</td>
+                        <td>${entry.user}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterHistory() {
+            const searchTerm = document.getElementById('searchHistory').value.toLowerCase();
+            const typeFilter = document.getElementById('filterHistoryType').value;
+            const dateFilter = document.getElementById('filterHistoryDate').value;
+            
+            const filtered = history.filter(entry => {
+                const matchSearch = entry.playerName.toLowerCase().includes(searchTerm) || 
+                                   entry.description.toLowerCase().includes(searchTerm);
+                const matchType = !typeFilter || entry.type === typeFilter;
+                const matchDate = !dateFilter || entry.date.startsWith(dateFilter);
+                
+                return matchSearch && matchType && matchDate;
+            });
+            
+            displayHistory(filtered);
+        }
+
+        // ==================== MODAL PROFIL JOUEUR ====================
+        function showPlayerProfile(playerId) {
+            const player = players.find(p => p.id === playerId);
+            if (!player) return;
+            
+            const modal = document.getElementById('playerModal');
+            modal.classList.add('active');
+            
+            // Informations de base
+            document.getElementById('modalPlayerName').textContent = `Profil de ${player.firstName} ${player.lastName}`;
+            document.getElementById('modalPlayerInitials').textContent = `${player.firstName[0]}${player.lastName[0]}`;
+            document.getElementById('modalFullName').textContent = `${player.firstName} ${player.lastName}`;
+            document.getElementById('modalNumber').textContent = player.number || '--';
+            document.getElementById('modalPosition').textContent = player.primaryPosition + (player.secondaryPosition ? ` / ${player.secondaryPosition}` : '');
+            document.getElementById('modalCategory').textContent = player.category;
+            document.getElementById('modalAge').textContent = calculateAge(player.birthDate) + ' ans';
+            
+            // Données morphologiques
+            document.getElementById('modalHeight').textContent = player.height ? `${player.height} cm` : '--';
+            document.getElementById('modalWeight').textContent = player.weight ? `${player.weight} kg` : '--';
+            document.getElementById('modalWingspan').textContent = player.wingspan ? `${player.wingspan} cm` : '--';
+            document.getElementById('modalVertical').textContent = player.verticalJump ? `${player.verticalJump} cm` : '--';
+            
+            // Profil de jeu
+            document.getElementById('modalOffensive').textContent = player.offensiveProfile || '--';
+            document.getElementById('modalDefensive').textContent = player.defensiveProfile || '--';
+            document.getElementById('modalCharacteristics').textContent = player.characteristics && player.characteristics.length > 0 ? 
+                player.characteristics.join(', ') : '--';
+            
+            // Dernière évaluation
+            const playerEvals = evaluations[playerId];
+            if (playerEvals && playerEvals.length > 0) {
+                const lastEval = playerEvals[playerEvals.length - 1];
+                document.getElementById('modalGlobalRating').textContent = lastEval.globalRating.toFixed(1);
+                document.getElementById('modalNotes').textContent = lastEval.coachNotes || 'Aucune note disponible';
+                
+                // Créer le graphique radar dans le modal
+                createModalRadarChart(lastEval.skills);
+            } else {
+                document.getElementById('modalGlobalRating').textContent = '--';
+                document.getElementById('modalNotes').textContent = 'Aucune évaluation disponible';
+                
+                // Masquer le canvas du graphique
+                const canvas = document.getElementById('modalRadarChart');
+                canvas.style.display = 'none';
+            }
+        }
+
+        function createModalRadarChart(skills) {
+            const canvas = document.getElementById('modalRadarChart');
+            canvas.style.display = 'block';
+            const ctx = canvas.getContext('2d');
+            
+            if (modalRadarChart) {
+                modalRadarChart.destroy();
+            }
+            
+            const categories = {
+                'Tir': ['midRangeShot', 'threePointer', 'freeThrow'],
+                'Dribble': ['dribbleRight', 'dribbleLeft', 'changeDirection'],
+                'Passe': ['shortPass', 'longPass', 'createForOthers'],
+                'Défense': ['manDefense', 'steal', 'defensiveRebound'],
+                'Physique': ['speed', 'strength', 'endurance'],
+                'Mental': ['concentration', 'leadership', 'pressureManagement']
+            };
+            
+            const data = Object.keys(categories).map(cat => {
+                const catSkills = categories[cat];
+                return calculateCategoryAverage(skills, catSkills);
+            });
+            
+            modalRadarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: Object.keys(categories),
+                    datasets: [{
+                        label: 'Compétences',
+                        data: data,
+                        backgroundColor: 'rgba(118, 75, 162, 0.2)',
+                        borderColor: '#764ba2',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#764ba2',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#764ba2'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('playerModal').classList.remove('active');
+        }
+
+        // ==================== DASHBOARD ====================
+        function loadDashboard() {
+            // Statistiques globales
+            document.getElementById('totalPlayers').textContent = players.length;
+            
+            // Nombre de catégories uniques
+            const categories = [...new Set(players.map(p => p.category))];
+            document.getElementById('categories').textContent = categories.length;
+            
+            // Nombre total d'évaluations
+            let totalEvals = 0;
+            let totalRatings = 0;
+            let ratingCount = 0;
+            
+            Object.values(evaluations).forEach(playerEvals => {
+                totalEvals += playerEvals.length;
+                playerEvals.forEach(eval => {
+                    if (eval.globalRating) {
+                        totalRatings += eval.globalRating;
+                        ratingCount++;
+                    }
+                });
+            });
+            
+            document.getElementById('evalCount').textContent = totalEvals;
+            document.getElementById('avgRating').textContent = ratingCount > 0 ? 
+                (totalRatings / ratingCount).toFixed(1) : '0';
+            
+            // Dernières évaluations
+            const recentEvals = [];
+            Object.entries(evaluations).forEach(([playerId, playerEvals]) => {
+                const player = players.find(p => p.id === playerId);
+                if (player && playerEvals.length > 0) {
+                    const lastEval = playerEvals[playerEvals.length - 1];
+                    recentEvals.push({
+                        date: lastEval.date,
+                        playerName: `${player.firstName} ${player.lastName}`,
+                        rating: lastEval.globalRating
+                    });
+                }
+            });
+            
+            // Trier par date et prendre les 5 dernières
+            recentEvals.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const latest = recentEvals.slice(0, 5);
+            
+            const tbody = document.getElementById('recentEvaluations');
+            if (latest.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Aucune évaluation récente</td></tr>';
+            } else {
+                tbody.innerHTML = latest.map(eval => {
+                    const progression = Math.random() > 0.5 ? '+' : '-'; // Simulation, à remplacer par une vraie logique
+                    const progressClass = progression === '+' ? 'badge-success' : 'badge-warning';
+                    
+                    return `
+                        <tr>
+                            <td>${formatDate(eval.date)}</td>
+                            <td>${eval.playerName}</td>
+                            <td>Évaluation complète</td>
+                            <td><span class="badge ${progressClass}">${progression}${(Math.random() * 2).toFixed(1)}%</span></td>
+                            <td><strong>${eval.rating.toFixed(1)}</strong>/10</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        // ==================== FONCTIONS UTILITAIRES ====================
+        function calculateAge(birthDate) {
+            if (!birthDate) return '--';
+            const birth = new Date(birthDate);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function calculateGlobalRating(skills) {
+            const values = Object.values(skills);
+            const sum = values.reduce((acc, val) => acc + val, 0);
+            return parseFloat((sum / values.length).toFixed(1));
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser les sliders
+            const sliders = document.querySelectorAll('.skill-slider');
+            sliders.forEach(slider => {
+                slider.addEventListener('input', function() {
+                    document.getElementById(this.id + 'Value').textContent = this.value;
+                });
+            });
+            
+            // Fermer le modal au clic extérieur
+            document.getElementById('playerModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+            
+            // Charger le dashboard au démarrage
+            loadDashboard();
+        });
+
+        // Initialisation au chargement
+        window.onload = function() {
+            loadDashboard();
+        };
+    </script>
+</body>
+</html>
+                

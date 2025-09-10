@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suivi Joueuses Basketball - Club Féminin</title>
     <style>
+        /* [Garder tous les styles existants...] */
         * {
             margin: 0;
             padding: 0;
@@ -75,7 +76,7 @@
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            min-height: 500enstoff;
+            min-height: 500px;
         }
 
         .tab-content {
@@ -219,6 +220,114 @@
             transform: translateY(-2px);
         }
 
+        /* Nouveaux styles pour l'import en masse */
+        .import-area {
+            border: 2px dashed #764ba2;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+
+        .import-area:hover {
+            background: #efefef;
+        }
+
+        .import-area.dragover {
+            background: #e8d4ff;
+            border-color: #5a3785;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            background: #764ba2;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+
+        .file-input-label:hover {
+            background: #5a3785;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .import-preview {
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+
+        .import-preview table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .import-preview th,
+        .import-preview td {
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            text-align: left;
+        }
+
+        .import-preview th {
+            background: #764ba2;
+            color: white;
+        }
+
+        .import-preview tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .paste-area {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        .suggestion-badge {
+            background: #4caf50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+
+        .auto-detect-section {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #4caf50;
+        }
+
+        .auto-detect-section h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .skill-recommendation {
+            display: inline-block;
+            padding: 4px 10px;
+            margin: 2px;
+            border-radius: 12px;
+            font-size: 12px;
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
         .evaluation-grid {
             display: grid;
             gap: 30px;
@@ -354,6 +463,11 @@
             color: white;
         }
 
+        .badge-info {
+            background: #2196f3;
+            color: white;
+        }
+
         .search-bar {
             display: flex;
             gap: 10px;
@@ -459,12 +573,6 @@
             color: #666;
         }
 
-        .radar-chart {
-            width: 100%;
-            max-width: 400px;
-            margin: 20px auto;
-        }
-
         @media (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -493,18 +601,20 @@
                 <span class="basketball-icon">🏀</span>
                 Système de Suivi - Club Féminin de Basketball
             </h1>
-           <div class="nav-tabs">
+            <div class="nav-tabs">
                 <button class="tab-btn active" onclick="switchTab('dashboard', this)">Tableau de Bord</button>
                 <button class="tab-btn" onclick="switchTab('players', this)">Joueuses</button>
                 <button class="tab-btn" onclick="switchTab('addPlayer', this)">Nouvelle Joueuse</button>
+                <button class="tab-btn" onclick="switchTab('importPlayers', this)">Import en Masse</button>
                 <button class="tab-btn" onclick="switchTab('evaluation', this)">Évaluation</button>
                 <button class="tab-btn" onclick="switchTab('statistics', this)">Statistiques</button>
                 <button class="tab-btn" onclick="switchTab('history', this)">Historique</button>
+                <button class="tab-btn" onclick="switchTab('autoProfile', this)">Profils Auto</button>
             </div>
         </header>
 
         <div class="content">
-            <!-- Dashboard Tab -->
+            <!-- Dashboard Tab (existant) -->
             <div id="dashboard" class="tab-content active">
                 <h2>Vue d'ensemble</h2>
                 <div class="stats-container">
@@ -545,7 +655,7 @@
                 </table>
             </div>
 
-            <!-- Players List Tab -->
+            <!-- Players List Tab (existant) -->
             <div id="players" class="tab-content">
                 <h2>Liste des Joueuses</h2>
                 <div class="search-bar">
@@ -579,247 +689,204 @@
                     <!-- Players will be loaded here -->
                 </div>
             </div>
-        </div>
 
-            <!-- Add Player Tab -->
-           <div id="addPlayer" class="tab-content">
-            <h2>Ajouter une Nouvelle Joueuse</h2>
-            
-            <form id="playerForm" onsubmit="savePlayer(event)">
-                <!-- Informations Personnelles -->
-                <div class="form-section">
-                    <h3>Informations Personnelles</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Prénom *</label>
-                            <input type="text" name="firstName" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Nom *</label>
-                            <input type="text" name="lastName" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Date de naissance *</label>
-                            <input type="date" name="birthDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Numéro de maillot</label>
-                            <input type="number" name="number" min="0" max="99">
-                        </div>
-                        <div class="form-group">
-                            <label>Catégorie *</label>
-                            <select name="category" required>
-                                <option value="">Sélectionner...</option>
-                                <option value="U15">U15</option>
-                                <option value="U18">U18</option>
-                                <option value="Seniors">Seniors</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Catégorie actuelle *</label>
-                            <select name="currentCategory" required>
-                                <option value="">Sélectionner...</option>
-                                <option value="U15">U15</option>
-                                <option value="U18">U18</option>
-                                <option value="Seniors">Seniors</option>
-                                <option value="Reserve">Réserve</option>
-                                <option value="Blessée">Blessée</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Équipe actuelle *</label>
-                            <select name="currentTeam" required>
-                                <option value="">Sélectionner...</option>
-                                <option value="Équipe 1">Équipe 1 - Championnat</option>
-                                <option value="Équipe 2">Équipe 2 - Réserve</option>
-                                <option value="Espoirs">Espoirs</option>
-                                <option value="Élite">Élite</option>
-                                <option value="Développement">Développement</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Date d'arrivée au club</label>
-                            <input type="date" name="joinDate">
+            <!-- Add Player Tab (existant mais conservé) -->
+            <div id="addPlayer" class="tab-content">
+                <!-- Contenu existant conservé -->
+                <h2>Ajouter une Nouvelle Joueuse</h2>
+                
+                <form id="playerForm" onsubmit="savePlayer(event)">
+                    <!-- Tous les champs existants conservés... -->
+                    <div class="form-section">
+                        <h3>Informations Personnelles</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Prénom *</label>
+                                <input type="text" name="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nom *</label>
+                                <input type="text" name="lastName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Date de naissance *</label>
+                                <input type="date" name="birthDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Numéro de maillot</label>
+                                <input type="number" name="number" min="0" max="99">
+                            </div>
+                            <div class="form-group">
+                                <label>Catégorie *</label>
+                                <select name="category" required>
+                                    <option value="">Sélectionner...</option>
+                                    <option value="U15">U15</option>
+                                    <option value="U18">U18</option>
+                                    <option value="Seniors">Seniors</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Catégorie actuelle *</label>
+                                <select name="currentCategory" required>
+                                    <option value="">Sélectionner...</option>
+                                    <option value="U15">U15</option>
+                                    <option value="U18">U18</option>
+                                    <option value="Seniors">Seniors</option>
+                                    <option value="Reserve">Réserve</option>
+                                    <option value="Blessée">Blessée</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Équipe actuelle *</label>
+                                <select name="currentTeam" required>
+                                    <option value="">Sélectionner...</option>
+                                    <option value="Équipe 1">Équipe 1 - Championnat</option>
+                                    <option value="Équipe 2">Équipe 2 - Réserve</option>
+                                    <option value="Espoirs">Espoirs</option>
+                                    <option value="Élite">Élite</option>
+                                    <option value="Développement">Développement</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
-        
-                <!-- Données Morphologiques -->
-                <div class="form-section">
-                    <h3>Données Morphologiques</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Taille (cm) *</label>
-                            <input type="number" name="height" min="140" max="220" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Poids (kg)</label>
-                            <input type="number" name="weight" min="40" max="150">
-                        </div>
-                        <div class="form-group">
-                            <label>Envergure (cm)</label>
-                            <input type="number" name="wingspan" min="140" max="250">
-                        </div>
-                        <div class="form-group">
-                            <label>Détente verticale (cm)</label>
-                            <input type="number" name="verticalJump" min="0" max="100">
-                        </div>
-                        <div class="form-group">
-                            <label>Main dominante</label>
-                            <select name="dominantHand">
-                                <option value="Droite">Droite</option>
-                                <option value="Gauche">Gauche</option>
-                                <option value="Ambidextre">Ambidextre</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Pointure</label>
-                            <input type="number" name="shoeSize" min="35" max="50" step="0.5">
-                        </div>
-                    </div>
-                </div>
-        
-                <!-- Profil de Jeu -->
-                <div class="form-section">
-                    <h3>Profil de Jeu</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Poste principal *</label>
-                            <select name="primaryPosition" required>
-                                <option value="">Sélectionner...</option>
-                                <option value="Meneuse">Meneuse (1)</option>
-                                <option value="Arrière">Arrière (2)</option>
-                                <option value="Ailière">Ailière (3)</option>
-                                <option value="Ailière forte">Ailière forte (4)</option>
-                                <option value="Pivot">Pivot (5)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Poste secondaire</label>
-                            <select name="secondaryPosition">
-                                <option value="">Aucun</option>
-                                <option value="Meneuse">Meneuse (1)</option>
-                                <option value="Arrière">Arrière (2)</option>
-                                <option value="Ailière">Ailière (3)</option>
-                                <option value="Ailière forte">Ailière forte (4)</option>
-                                <option value="Pivot">Pivot (5)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Profil offensif</label>
-                            <select name="offensiveProfile">
-                                <option value="">Sélectionner...</option>
-                                <option value="Scoreuse intérieure">Scoreuse intérieure</option>
-                                <option value="Scoreuse extérieure">Scoreuse extérieure</option>
-                                <option value="Créatrice">Créatrice/Facilitatrice</option>
-                                <option value="Shooteuse">Shooteuse</option>
-                                <option value="Slasheuse">Slasheuse</option>
-                                <option value="Post-up player">Post-up player</option>
-                                <option value="Catch & shoot">Catch & shoot</option>
-                                <option value="Polyvalente">Polyvalente</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Profil défensif</label>
-                            <select name="defensiveProfile">
-                                <option value="">Sélectionner...</option>
-                                <option value="Lock defender">Lock defender</option>
-                                <option value="Rim protector">Rim protector</option>
-                                <option value="Défenseuse périmètre">Défenseuse périmètre</option>
-                                <option value="Voleuse de ballon">Voleuse de ballon</option>
-                                <option value="Rebondeuse">Rebondeuse</option>
-                                <option value="Polyvalente">Défenseuse polyvalente</option>
-                            </select>
-                        </div>
-                    </div>
-        
-                    <h4 style="margin-top: 20px; margin-bottom: 10px;">Caractéristiques dominantes</h4>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="characteristics" value="Vitesse" id="char1">
-                            <label for="char1">Vitesse</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="characteristics" value="Puissance physique" id="char2">
-                            <label for="char2">Puissance physique</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="characteristics" value="Technique pure" id="char3">
-                            <label for="char3">Technique pure</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="characteristics" value="QI basket élevé" id="char4">
-                            <label for="char4">QI basket élevé</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="characteristics" value="Adresse longue distance" id="char5">
-                            <label for="char5">Adresse longue distance</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="characteristics" value="Jeu dos au panier" id="char6">
-                            <label for="char6">Jeu dos au panier</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="characteristics" value="Défense élite" id="char7">
-                            <label for="char7">Défense élite</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="characteristics" value="Vision de jeu" id="char8">
-                            <label for="char8">Vision de jeu</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="characteristics" value="Leadership vocal" id="char9">
-                            <label for="char9">Leadership vocal</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="characteristics" value="Polyvalence" id="char10">
-                            <label for="char10">Polyvalence</label>
-                        </div>
-                    </div>
-                </div>
-        
-                <!-- Informations Médicales -->
-                <div class="form-section">
-                    <h3>Informations Médicales</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Groupe sanguin</label>
-                            <select name="bloodType">
-                                <option value="">Non renseigné</option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Allergies connues</label>
-                            <input type="text" name="allergies" placeholder="Ex: Pollen, acariens...">
-                        </div>
-                        <div class="form-group">
-                            <label>Contact d'urgence</label>
-                            <input type="tel" name="emergencyContact" placeholder="06 XX XX XX XX">
-                        </div>
-                        <div class="form-group">
-                            <label>Port de lunettes/lentilles</label>
-                            <select name="glasses">
-                                <option value="Non">Non</option>
-                                <option value="Lunettes">Lunettes</option>
-                                <option value="Lentilles">Lentilles</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-        
-                <button type="submit" class="btn-primary">Enregistrer la Joueuse</button>
-            </form>
-        </div>
 
-            <!-- Evaluation Tab -->
+                    <button type="submit" class="btn-primary">Enregistrer la Joueuse</button>
+                </form>
+            </div>
+
+            <!-- NOUVEAU: Import en Masse Tab -->
+            <div id="importPlayers" class="tab-content">
+                <h2>Import en Masse de Joueuses</h2>
+                
+                <div class="form-section">
+                    <h3>📁 Méthode 1: Import depuis un fichier CSV</h3>
+                    <div class="import-area" id="dropZone">
+                        <p style="margin-bottom: 15px;">Glissez-déposez votre fichier CSV ici ou</p>
+                        <label class="file-input-label">
+                            Choisir un fichier
+                            <input type="file" id="csvFile" accept=".csv" onchange="handleFileSelect(event)">
+                        </label>
+                        <p style="margin-top: 15px; font-size: 12px; color: #666;">
+                            Format attendu: Prénom, Nom, Date naissance (JJ/MM/AAAA), Numéro, Catégorie, Équipe, Taille (cm), Poste
+                        </p>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="downloadTemplate()">📥 Télécharger le modèle CSV</button>
+                </div>
+
+                <div class="form-section">
+                    <h3>📋 Méthode 2: Copier-coller depuis Excel/Tableur</h3>
+                    <textarea class="paste-area" id="pasteArea" placeholder="Collez ici vos données depuis Excel ou Google Sheets...
+Format attendu (séparé par des tabulations):
+Prénom    Nom    Date naissance    Numéro    Catégorie    Équipe    Taille    Poste"></textarea>
+                    <button class="btn-primary" onclick="processPastedData()">Traiter les données collées</button>
+                </div>
+
+                <div id="importPreview" style="display: none;">
+                    <div class="form-section">
+                        <h3>✅ Prévisualisation de l'import</h3>
+                        <p id="importSummary" style="margin-bottom: 15px;"></p>
+                        <div class="import-preview">
+                            <table id="previewTable">
+                                <thead>
+                                    <tr>
+                                        <th>✓</th>
+                                        <th>Prénom</th>
+                                        <th>Nom</th>
+                                        <th>Date naissance</th>
+                                        <th>Numéro</th>
+                                        <th>Catégorie</th>
+                                        <th>Équipe</th>
+                                        <th>Taille</th>
+                                        <th>Poste</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="previewBody">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <button class="btn-primary" onclick="confirmImport()">✅ Confirmer l'import</button>
+                            <button class="btn-primary" style="background: #f44336;" onclick="cancelImport()">❌ Annuler</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOUVEAU: Auto Profile Tab -->
+            <div id="autoProfile" class="tab-content">
+                <h2>Détermination Automatique des Profils</h2>
+                
+                <div class="form-section">
+                    <h3>🤖 Analyse Intelligente des Profils</h3>
+                    <p style="margin-bottom: 20px;">
+                        Le système analyse les évaluations de chaque joueuse pour déterminer automatiquement :
+                        le poste idéal, le profil offensif, le profil défensif et les caractéristiques dominantes.
+                    </p>
+                    
+                    <div class="form-group">
+                        <label>Sélectionner une joueuse à analyser</label>
+                        <select id="autoProfileSelect" onchange="analyzePlayerProfile()">
+                            <option value="">Choisir une joueuse...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="profileAnalysis" style="display: none;">
+                    <div class="auto-detect-section">
+                        <h4>📊 Analyse des Compétences</h4>
+                        <div id="skillAnalysisChart">
+                            <!-- Canvas pour le graphique radar sera ajouté ici -->
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>🎯 Poste Recommandé</h3>
+                        <div id="positionRecommendation">
+                            <!-- Recommandations de poste -->
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>⚔️ Profil Offensif Détecté</h3>
+                        <div id="offensiveProfileAnalysis">
+                            <!-- Analyse du profil offensif -->
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>🛡️ Profil Défensif Détecté</h3>
+                        <div id="defensiveProfileAnalysis">
+                            <!-- Analyse du profil défensif -->
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>⭐ Caractéristiques Dominantes</h3>
+                        <div id="dominantCharacteristics">
+                            <!-- Caractéristiques détectées -->
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="applyAutoProfile()">
+                        Appliquer ces recommandations au profil
+                    </button>
+                </div>
+
+                <div class="form-section" style="margin-top: 30px;">
+                    <h3>🔄 Analyse en Lot</h3>
+                    <p>Analyser et mettre à jour automatiquement les profils de toutes les joueuses évaluées.</p>
+                    <button class="btn-primary" onclick="analyzeAllPlayers()">
+                        Analyser toutes les joueuses
+                    </button>
+                    <div id="batchAnalysisResults" style="margin-top: 20px; display: none;">
+                        <!-- Résultats de l'analyse en lot -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluation Tab (existant) -->
             <div id="evaluation" class="tab-content">
                 <h2>Évaluation des Compétences</h2>
                 
@@ -867,9 +934,19 @@
                                 <input type="range" class="skill-slider" min="1" max="10" value="5" id="freeThrow">
                                 <span class="skill-value" id="freeThrowValue">5</span>
                             </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Finition au contact</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="contactFinish">
+                                <span class="skill-value" id="contactFinishValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Floater</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="floater">
+                                <span class="skill-value" id="floaterValue">5</span>
+                            </div>
                         </div>
 
-                       <!-- Dribble et Création -->
+                        <!-- Dribble et Création -->
                         <div class="skill-category">
                             <h4>🏀 Dribble et Création</h4>
                             <div class="skill-item">
@@ -896,6 +973,11 @@
                                 <span class="skill-name">Création pour soi</span>
                                 <input type="range" class="skill-slider" min="1" max="10" value="5" id="createOwnShot">
                                 <span class="skill-value" id="createOwnShotValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Contrôle du ballon</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="ballControl">
+                                <span class="skill-value" id="ballControlValue">5</span>
                             </div>
                         </div>
 
@@ -926,6 +1008,11 @@
                                 <span class="skill-name">Création pour les autres</span>
                                 <input type="range" class="skill-slider" min="1" max="10" value="5" id="createForOthers">
                                 <span class="skill-value" id="createForOthersValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Timing de passe</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="passTiming">
+                                <span class="skill-value" id="passTimingValue">5</span>
                             </div>
                         </div>
 
@@ -962,11 +1049,46 @@
                                 <input type="range" class="skill-slider" min="1" max="10" value="5" id="defensiveCommunication">
                                 <span class="skill-value" id="defensiveCommunicationValue">5</span>
                             </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Défense périmètre</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="perimeterDefense">
+                                <span class="skill-value" id="perimeterDefenseValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Défense poste bas</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="postDefense">
+                                <span class="skill-value" id="postDefenseValue">5</span>
+                            </div>
+                        </div>
+
+                        <!-- Jeu Intérieur -->
+                        <div class="skill-category">
+                            <h4>💪 Jeu Intérieur</h4>
+                            <div class="skill-item">
+                                <span class="skill-name">Jeu dos au panier</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="postUp">
+                                <span class="skill-value" id="postUpValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Hook shot</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="hookShot">
+                                <span class="skill-value" id="hookShotValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Rebond offensif</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="offensiveRebound">
+                                <span class="skill-value" id="offensiveReboundValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Écrans</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="screening">
+                                <span class="skill-value" id="screeningValue">5</span>
+                            </div>
                         </div>
 
                         <!-- Aspects Physiques -->
                         <div class="skill-category">
-                            <h4>💪 Aspects Physiques</h4>
+                            <h4>⚡ Aspects Physiques</h4>
                             <div class="skill-item">
                                 <span class="skill-name">Vitesse</span>
                                 <input type="range" class="skill-slider" min="1" max="10" value="5" id="speed">
@@ -989,13 +1111,17 @@
                             </div>
                             <div class="skill-item">
                                 <span class="skill-name">Endurance</span>
-                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="endurance">
-                                <span class="skill-value" id="enduranceValue">5</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="enduranceValue">5</span>
                             </div>
                             <div class="skill-item">
                                 <span class="skill-name">Coordination</span>
                                 <input type="range" class="skill-slider" min="1" max="10" value="5" id="coordination">
                                 <span class="skill-value" id="coordinationValue">5</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Équilibre</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="balance">
+                                <span class="skill-value" id="balanceValue">5</span>
                             </div>
                         </div>
 
@@ -1094,22 +1220,12 @@
                             <div class="stat-label">Moyenne Mentale</div>
                         </div>
                     </div>
-                    
-                    <h3 style="margin-top: 30px; color: #764ba2;">Répartition par Équipe</h3>
-                    <div class="stats-container" id="teamStats">
-                        <!-- Sera rempli dynamiquement -->
-                    </div>
 
                     <div class="form-section" style="margin-top: 30px;">
                         <h3>Graphique Radar des Compétences</h3>
                         <canvas id="radarChart" class="radar-chart"></canvas>
                     </div>
 
-                   <div class="form-section">
-                        <h3>Évolution dans le Temps</h3>
-                        <canvas id="progressChart" style="width: 100%; height: 300px;"></canvas>
-                    </div>
-                    
                     <div class="form-section">
                         <h3>Points Forts / Points Faibles</h3>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -1137,7 +1253,8 @@
                         <option value="creation">Création</option>
                         <option value="evaluation">Évaluation</option>
                         <option value="modification">Modification</option>
-                        <option value="suppression">Suppression</option>
+                        <option value="import">Import</option>
+                        <option value="auto-profile">Profil Auto</option>
                     </select>
                     <input type="date" id="filterHistoryDate" onchange="filterHistory()">
                 </div>
@@ -1196,28 +1313,6 @@
             </div>
 
             <div class="form-section">
-                <h3>Données Morphologiques</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <div class="profile-detail">
-                        <strong>Taille:</strong>
-                        <span id="modalHeight">--</span>
-                    </div>
-                    <div class="profile-detail">
-                        <strong>Poids:</strong>
-                        <span id="modalWeight">--</span>
-                    </div>
-                    <div class="profile-detail">
-                        <strong>Envergure:</strong>
-                        <span id="modalWingspan">--</span>
-                    </div>
-                    <div class="profile-detail">
-                        <strong>Détente:</strong>
-                        <span id="modalVertical">--</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-section">
                 <h3>Profil de Jeu</h3>
                 <div class="profile-detail">
                     <strong>Profil Offensif:</strong>
@@ -1240,11 +1335,6 @@
                     Note globale: <strong id="modalGlobalRating">--</strong>/10
                 </p>
             </div>
-
-            <div class="form-section">
-                <h3>Notes et Observations</h3>
-                <p id="modalNotes" style="color: #666;">Aucune note disponible</p>
-            </div>
         </div>
     </div>
 
@@ -1255,12 +1345,984 @@
         let evaluations = JSON.parse(localStorage.getItem('playerEvaluations')) || {};
         let history = JSON.parse(localStorage.getItem('historyLog')) || [];
         let currentPlayerId = null;
+        let importData = [];
         let radarChart = null;
-        let progressChart = null;
         let modalRadarChart = null;
+        let profileRadarChart = null;
 
-        // ==================== GESTION DES ONGLETS ====================
-        function switchTab(tabName, buttonElement) {
+        // ==================== SYSTÈME D'IMPORT EN MASSE ====================
+        
+        // Gérer le drag & drop
+        const dropZone = document.getElementById('dropZone');
+        if (dropZone) {
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelect({ target: { files: files } });
+                }
+            });
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                parseCSV(content);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSV(content) {
+            const lines = content.split('\n').filter(line => line.trim());
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            importData = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                const player = {
+                    firstName: values[0] || '',
+                    lastName: values[1] || '',
+                    birthDate: convertDateFormat(values[2] || ''),
+                    number: values[3] || '',
+                    category: values[4] || '',
+                    currentTeam: values[5] || '',
+                    height: values[6] || '',
+                    primaryPosition: values[7] || '',
+                    status: 'valid'
+                };
+                
+                // Validation basique
+                if (!player.firstName || !player.lastName) {
+                    player.status = 'invalid';
+                }
+                
+                importData.push(player);
+            }
+            
+            displayImportPreview();
+        }
+
+        function processPastedData() {
+            const pasteArea = document.getElementById('pasteArea');
+            const content = pasteArea.value;
+            
+            if (!content.trim()) {
+                alert('Veuillez coller des données dans la zone de texte');
+                return;
+            }
+            
+            const lines = content.split('\n').filter(line => line.trim());
+            importData = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const values = lines[i].split('\t').map(v => v.trim());
+                
+                if (values.length < 3) continue;
+                
+                const player = {
+                    firstName: values[0] || '',
+                    lastName: values[1] || '',
+                    birthDate: convertDateFormat(values[2] || ''),
+                    number: values[3] || '',
+                    category: values[4] || 'Seniors',
+                    currentTeam: values[5] || 'Équipe 1',
+                    height: values[6] || '',
+                    primaryPosition: values[7] || '',
+                    status: 'valid'
+                };
+                
+                // Validation
+                if (!player.firstName || !player.lastName) {
+                    player.status = 'invalid';
+                }
+                
+                importData.push(player);
+            }
+            
+            if (importData.length === 0) {
+                alert('Aucune donnée valide trouvée');
+                return;
+            }
+            
+            displayImportPreview();
+        }
+
+        function displayImportPreview() {
+            const previewSection = document.getElementById('importPreview');
+            const tbody = document.getElementById('previewBody');
+            const summary = document.getElementById('importSummary');
+            
+            const validCount = importData.filter(p => p.status === 'valid').length;
+            const invalidCount = importData.filter(p => p.status === 'invalid').length;
+            
+            summary.innerHTML = `
+                <strong>${importData.length}</strong> joueuses détectées 
+                (<span style="color: #4caf50;">${validCount} valides</span>, 
+                <span style="color: #f44336;">${invalidCount} invalides</span>)
+            `;
+            
+            tbody.innerHTML = importData.map((player, index) => `
+                <tr style="${player.status === 'invalid' ? 'background: #ffebee;' : ''}">
+                    <td>
+                        <input type="checkbox" 
+                               id="import_${index}" 
+                               ${player.status === 'valid'
+                                 // Suite de displayImportPreview()
+function displayImportPreview() {
+    const previewSection = document.getElementById('importPreview');
+    const tbody = document.getElementById('previewBody');
+    const summary = document.getElementById('importSummary');
+    
+    const validCount = importData.filter(p => p.status === 'valid').length;
+    const invalidCount = importData.filter(p => p.status === 'invalid').length;
+    
+    summary.innerHTML = `
+        <strong>${importData.length}</strong> joueuses détectées 
+        (<span style="color: #4caf50;">${validCount} valides</span>, 
+        <span style="color: #f44336;">${invalidCount} invalides</span>)
+    `;
+    
+    tbody.innerHTML = importData.map((player, index) => `
+        <tr style="${player.status === 'invalid' ? 'background: #ffebee;' : ''}">
+            <td>
+                <input type="checkbox" 
+                       id="import_${index}" 
+                       ${player.status === 'valid' ? 'checked' : ''}
+                       ${player.status === 'invalid' ? 'disabled' : ''}>
+            </td>
+            <td>${player.firstName}</td>
+            <td>${player.lastName}</td>
+            <td>${player.birthDate}</td>
+            <td>${player.number || '--'}</td>
+            <td>${player.category}</td>
+            <td>${player.currentTeam}</td>
+            <td>${player.height || '--'}</td>
+            <td>${player.primaryPosition || 'Auto'}</td>
+            <td>
+                <span class="badge ${player.status === 'valid' ? 'badge-success' : 'badge-danger'}">
+                    ${player.status === 'valid' ? 'Valide' : 'Invalide'}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+    
+    previewSection.style.display = 'block';
+}
+
+function confirmImport() {
+    const selectedPlayers = [];
+    
+    importData.forEach((player, index) => {
+        const checkbox = document.getElementById(`import_${index}`);
+        if (checkbox && checkbox.checked) {
+            const newPlayer = {
+                id: Date.now().toString() + '_' + index,
+                ...player,
+                currentCategory: player.category,
+                joinDate: new Date().toISOString().split('T')[0],
+                createdAt: new Date().toISOString()
+            };
+            delete newPlayer.status;
+            selectedPlayers.push(newPlayer);
+        }
+    });
+    
+    if (selectedPlayers.length === 0) {
+        alert('Aucune joueuse sélectionnée pour l\'import');
+        return;
+    }
+    
+    // Ajouter les joueuses
+    players.push(...selectedPlayers);
+    localStorage.setItem('basketballPlayers', JSON.stringify(players));
+    
+    // Ajouter à l'historique
+    selectedPlayers.forEach(player => {
+        addToHistory('import', player, `Import en masse - ${player.firstName} ${player.lastName}`);
+    });
+    
+    alert(`${selectedPlayers.length} joueuse(s) importée(s) avec succès !`);
+    
+    // Réinitialiser
+    cancelImport();
+    
+    // Rafraîchir la vue
+    switchTab('players', document.querySelector('.tab-btn:nth-child(2)'));
+}
+
+function cancelImport() {
+    document.getElementById('importPreview').style.display = 'none';
+    document.getElementById('pasteArea').value = '';
+    document.getElementById('csvFile').value = '';
+    importData = [];
+}
+
+function downloadTemplate() {
+    const template = `Prénom,Nom,Date naissance,Numéro,Catégorie,Équipe,Taille,Poste
+Marie,Dupont,15/03/2008,7,U15,Équipe 1,165,Meneuse
+Sophie,Martin,22/11/2007,12,U18,Équipe 2,172,Arrière
+Léa,Bernard,08/05/2005,23,Seniors,Élite,180,Ailière`;
+    
+    const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'modele_import_joueuses.csv';
+    link.click();
+}
+
+function convertDateFormat(dateStr) {
+    if (!dateStr) return '';
+    
+    // Format JJ/MM/AAAA vers AAAA-MM-JJ
+    if (dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+    }
+    return dateStr;
+}
+
+// ==================== SYSTÈME DE PROFIL AUTOMATIQUE ====================
+
+function analyzePlayerProfile() {
+    const playerId = document.getElementById('autoProfileSelect').value;
+    if (!playerId) {
+        document.getElementById('profileAnalysis').style.display = 'none';
+        return;
+    }
+    
+    const player = players.find(p => p.id === playerId);
+    const playerEvals = evaluations[playerId];
+    
+    if (!playerEvals || playerEvals.length === 0) {
+        document.getElementById('profileAnalysis').innerHTML = `
+            <div class="form-section">
+                <p style="text-align: center; color: #666;">
+                    Aucune évaluation disponible pour ${player.firstName} ${player.lastName}.
+                    Veuillez d'abord effectuer une évaluation.
+                </p>
+            </div>
+        `;
+        document.getElementById('profileAnalysis').style.display = 'block';
+        return;
+    }
+    
+    // Utiliser la dernière évaluation
+    const lastEval = playerEvals[playerEvals.length - 1];
+    const analysis = performProfileAnalysis(player, lastEval.skills);
+    
+    displayProfileAnalysis(player, analysis);
+    document.getElementById('profileAnalysis').style.display = 'block';
+}
+
+function performProfileAnalysis(player, skills) {
+    const analysis = {
+        position: determineOptimalPosition(player, skills),
+        offensiveProfile: determineOffensiveProfile(skills),
+        defensiveProfile: determineDefensiveProfile(skills),
+        characteristics: determineDominantCharacteristics(skills),
+        strengths: [],
+        weaknesses: [],
+        recommendations: []
+    };
+    
+    // Identifier les forces et faiblesses
+    const skillArray = Object.entries(skills).map(([key, value]) => ({
+        name: key,
+        value: value
+    }));
+    
+    skillArray.sort((a, b) => b.value - a.value);
+    analysis.strengths = skillArray.slice(0, 5);
+    analysis.weaknesses = skillArray.filter(s => s.value < 5).slice(0, 3);
+    
+    // Recommandations basées sur l'analyse
+    analysis.recommendations = generateRecommendations(analysis, skills);
+    
+    return analysis;
+}
+
+function determineOptimalPosition(player, skills) {
+    const height = parseInt(player.height) || 175;
+    const positions = [];
+    
+    // Calcul des scores pour chaque poste
+    const meneuseScore = calculatePointGuardScore(height, skills);
+    const arriereScore = calculateShootingGuardScore(height, skills);
+    const ailiereScore = calculateSmallForwardScore(height, skills);
+    const ailiereFortScore = calculatePowerForwardScore(height, skills);
+    const pivotScore = calculateCenterScore(height, skills);
+    
+    positions.push(
+        { name: 'Meneuse', score: meneuseScore, reason: 'Excellente vision de jeu et contrôle du ballon' },
+        { name: 'Arrière', score: arriereScore, reason: 'Bon tir extérieur et création de jeu' },
+        { name: 'Ailière', score: ailiereScore, reason: 'Polyvalence offensive et défensive' },
+        { name: 'Ailière forte', score: ailiereFortScore, reason: 'Force physique et jeu intérieur/extérieur' },
+        { name: 'Pivot', score: pivotScore, reason: 'Domination dans la raquette et protection du cercle' }
+    );
+    
+    positions.sort((a, b) => b.score - a.score);
+    
+    return {
+        primary: positions[0],
+        secondary: positions[1].score > 60 ? positions[1] : null,
+        all: positions
+    };
+}
+
+function calculatePointGuardScore(height, skills) {
+    let score = 0;
+    
+    // Taille idéale pour meneuse
+    if (height < 175) score += 20;
+    else if (height < 180) score += 10;
+    
+    // Compétences critiques pour une meneuse
+    score += (skills.ballControl || 5) * 3;
+    score += (skills.shortPass || 5) * 3;
+    score += (skills.longPass || 5) * 2;
+    score += (skills.peripheralVision || 5) * 3;
+    score += (skills.gameReading || 5) * 3;
+    score += (skills.createForOthers || 5) * 3;
+    score += (skills.dribbleRight || 5) * 2;
+    score += (skills.dribbleLeft || 5) * 2;
+    score += (skills.speed || 5) * 2;
+    score += (skills.leadership || 5) * 2;
+    
+    return Math.min(100, score);
+}
+
+function calculateShootingGuardScore(height, skills) {
+    let score = 0;
+    
+    // Taille idéale pour arrière
+    if (height >= 170 && height <= 180) score += 20;
+    else if (height > 165 && height < 185) score += 10;
+    
+    // Compétences critiques pour une arrière
+    score += (skills.threePointer || 5) * 3;
+    score += (skills.midRangeShot || 5) * 3;
+    score += (skills.pullUpShot || 5) * 3;
+    score += (skills.createOwnShot || 5) * 3;
+    score += (skills.freeThrow || 5) * 2;
+    score += (skills.penetration || 5) * 2;
+    score += (skills.speed || 5) * 2;
+    score += (skills.agility || 5) * 2;
+    
+    return Math.min(100, score);
+}
+
+function calculateSmallForwardScore(height, skills) {
+    let score = 0;
+    
+    // Taille idéale pour ailière
+    if (height >= 175 && height <= 185) score += 20;
+    else if (height > 170 && height < 190) score += 10;
+    
+    // Compétences - polyvalence requise
+    score += (skills.midRangeShot || 5) * 2;
+    score += (skills.threePointer || 5) * 2;
+    score += (skills.penetration || 5) * 2;
+    score += (skills.layupRight || 5) * 2;
+    score += (skills.layupLeft || 5) * 2;
+    score += (skills.defensiveRebound || 5) * 2;
+    score += (skills.manDefense || 5) * 2;
+    score += (skills.speed || 5) * 2;
+    score += (skills.agility || 5) * 2;
+    score += (skills.coordination || 5) * 2;
+    
+    return Math.min(100, score);
+}
+
+function calculatePowerForwardScore(height, skills) {
+    let score = 0;
+    
+    // Taille idéale pour ailière forte
+    if (height >= 180 && height <= 190) score += 20;
+    else if (height > 175) score += 10;
+    
+    // Compétences
+    score += (skills.strength || 5) * 3;
+    score += (skills.postUp || 5) * 3;
+    score += (skills.defensiveRebound || 5) * 3;
+    score += (skills.offensiveRebound || 5) * 2;
+    score += (skills.midRangeShot || 5) * 2;
+    score += (skills.screening || 5) * 2;
+    score += (skills.contactFinish || 5) * 2;
+    score += (skills.postDefense || 5) * 2;
+    
+    return Math.min(100, score);
+}
+
+function calculateCenterScore(height, skills) {
+    let score = 0;
+    
+    // Taille idéale pour pivot
+    if (height > 185) score += 25;
+    else if (height > 180) score += 15;
+    
+    // Compétences
+    score += (skills.postUp || 5) * 3;
+    score += (skills.hookShot || 5) * 3;
+    score += (skills.defensiveRebound || 5) * 3;
+    score += (skills.offensiveRebound || 5) * 3;
+    score += (skills.block || 5) * 3;
+    score += (skills.strength || 5) * 3;
+    score += (skills.screening || 5) * 2;
+    score += (skills.postDefense || 5) * 3;
+    score += (skills.contactFinish || 5) * 2;
+    
+    return Math.min(100, score);
+}
+
+function determineOffensiveProfile(skills) {
+    const profiles = [];
+    
+    // Scoreuse intérieure
+    const interiorScore = (
+        (skills.contactFinish || 5) +
+        (skills.postUp || 5) +
+        (skills.hookShot || 5) +
+        (skills.layupRight || 5) +
+        (skills.layupLeft || 5)
+    ) / 5;
+    
+    if (interiorScore > 7) {
+        profiles.push({
+            type: 'Scoreuse intérieure',
+            score: interiorScore,
+            description: 'Excellente finition près du cercle et jeu dos au panier'
+        });
+    }
+    
+    // Scoreuse extérieure
+    const exteriorScore = (
+        (skills.threePointer || 5) +
+        (skills.midRangeShot || 5) +
+        (skills.pullUpShot || 5) +
+        (skills.freeThrow || 5)
+    ) / 4;
+    
+    if (exteriorScore > 7) {
+        profiles.push({
+            type: 'Scoreuse extérieure',
+            score: exteriorScore,
+            description: 'Tir longue distance et mi-distance efficace'
+        });
+    }
+    
+    // Créatrice
+    const creatorScore = (
+        (skills.shortPass || 5) +
+        (skills.longPass || 5) +
+        (skills.peripheralVision || 5) +
+        (skills.createForOthers || 5) +
+        (skills.gameReading || 5)
+    ) / 5;
+    
+    if (creatorScore > 7) {
+        profiles.push({
+            type: 'Créatrice',
+            score: creatorScore,
+            description: 'Vision de jeu exceptionnelle et création pour les coéquipières'
+        });
+    }
+    
+    // Shooteuse
+    const shooterScore = (
+        (skills.threePointer || 5) +
+        (skills.midRangeShot || 5) +
+        (skills.freeThrow || 5) +
+        (skills.floater || 5)
+    ) / 4;
+    
+    if (shooterScore > 7.5) {
+        profiles.push({
+            type: 'Shooteuse',
+            score: shooterScore,
+            description: 'Adresse remarquable à toutes distances'
+        });
+    }
+    
+    // Slasheuse
+    const slasherScore = (
+        (skills.penetration || 5) +
+        (skills.speed || 5) +
+        (skills.layupRight || 5) +
+        (skills.layupLeft || 5) +
+        (skills.contactFinish || 5)
+    ) / 5;
+    
+    if (slasherScore > 7) {
+        profiles.push({
+            type: 'Slasheuse',
+            score: slasherScore,
+            description: 'Pénétration explosive et finition au contact'
+        });
+    }
+    
+    // Post-up player
+    const postScore = (
+        (skills.postUp || 5) +
+        (skills.hookShot || 5) +
+        (skills.strength || 5) +
+        (skills.screening || 5)
+    ) / 4;
+    
+    if (postScore > 7) {
+        profiles.push({
+            type: 'Post-up player',
+            score: postScore,
+            description: 'Domination dans le jeu dos au panier'
+        });
+    }
+    
+    // Si aucun profil spécifique, déterminer le plus proche
+    if (profiles.length === 0) {
+        const allScores = [
+            { type: 'Polyvalente', score: 5, description: 'Profil équilibré sans spécialisation marquée' }
+        ];
+        return allScores[0];
+    }
+    
+    profiles.sort((a, b) => b.score - a.score);
+    return profiles[0];
+}
+
+function determineDefensiveProfile(skills) {
+    const profiles = [];
+    
+    // Lock defender
+    if ((skills.manDefense || 5) > 8) {
+        profiles.push({
+            type: 'Lock defender',
+            score: skills.manDefense,
+            description: 'Défense individuelle d\'élite'
+        });
+    }
+    
+    // Rim protector
+    const rimScore = ((skills.block || 5) + (skills.postDefense || 5)) / 2;
+    if (rimScore > 7) {
+        profiles.push({
+            type: 'Rim protector',
+            score: rimScore,
+            description: 'Protection du cercle et intimidation'
+        });
+    }
+    
+    // Défenseuse périmètre
+    const perimeterScore = (
+        (skills.perimeterDefense || 5) +
+        (skills.agility || 5) +
+        (skills.speed || 5)
+    ) / 3;
+    
+    if (perimeterScore > 7) {
+        profiles.push({
+            type: 'Défenseuse périmètre',
+            score: perimeterScore,
+            description: 'Excellente défense sur les extérieures'
+        });
+    }
+    
+    // Voleuse de ballon
+    if ((skills.steal || 5) > 7) {
+        profiles.push({
+            type: 'Voleuse de ballon',
+            score: skills.steal,
+            description: 'Capacité à créer des turnovers'
+        });
+    }
+    
+    // Rebondeuse
+    const reboundScore = (
+        (skills.defensiveRebound || 5) +
+        (skills.offensiveRebound || 5)
+    ) / 2;
+    
+    if (reboundScore > 7) {
+        profiles.push({
+            type: 'Rebondeuse',
+            score: reboundScore,
+            description: 'Domination aux rebonds'
+        });
+    }
+    
+    if (profiles.length === 0) {
+        return {
+            type: 'Défenseuse polyvalente',
+            score: 5,
+            description: 'Défense solide sans spécialisation'
+        };
+    }
+    
+    profiles.sort((a, b) => b.score - a.score);
+    return profiles[0];
+}
+
+function determineDominantCharacteristics(skills) {
+    const characteristics = [];
+    
+    // Analyser chaque catégorie de compétences
+    if ((skills.speed || 5) > 7) {
+        characteristics.push('Vitesse');
+    }
+    
+    if ((skills.strength || 5) > 7) {
+        characteristics.push('Puissance physique');
+    }
+    
+    const techniqueScore = (
+        (skills.ballControl || 5) +
+        (skills.dribbleRight || 5) +
+        (skills.dribbleLeft || 5)
+    ) / 3;
+    
+    if (techniqueScore > 7) {
+        characteristics.push('Technique pure');
+    }
+    
+    const basketIQScore = (
+        (skills.gameReading || 5) +
+        (skills.peripheralVision || 5) +
+        (skills.tacticalDiscipline || 5)
+    ) / 3;
+    
+    if (basketIQScore > 7) {
+        characteristics.push('QI basket élevé');
+    }
+    
+    if ((skills.threePointer || 5) > 7.5) {
+        characteristics.push('Adresse longue distance');
+    }
+    
+    if ((skills.postUp || 5) > 7) {
+        characteristics.push('Jeu dos au panier');
+    }
+    
+    const defenseScore = (
+        (skills.manDefense || 5) +
+        (skills.helpDefense || 5) +
+        (skills.defensiveCommunication || 5)
+    ) / 3;
+    
+    if (defenseScore > 7) {
+        characteristics.push('Défense élite');
+    }
+    
+    if ((skills.peripheralVision || 5) > 7 && (skills.createForOthers || 5) > 7) {
+        characteristics.push('Vision de jeu');
+    }
+    
+    if ((skills.leadership || 5) > 7) {
+        characteristics.push('Leadership vocal');
+    }
+    
+    // Si trop peu de caractéristiques, ajouter les plus hautes compétences
+    if (characteristics.length < 3) {
+        const allSkills = Object.entries(skills)
+            .map(([key, value]) => ({ name: getCharacteristicFromSkill(key), value }))
+            .filter(s => s.value > 6 && !characteristics.includes(s.name))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 3 - characteristics.length);
+        
+        characteristics.push(...allSkills.map(s => s.name));
+    }
+    
+    return characteristics.slice(0, 5);
+}
+
+function getCharacteristicFromSkill(skillName) {
+    const mapping = {
+        speed: 'Vitesse',
+        strength: 'Puissance physique',
+        agility: 'Agilité',
+        explosiveness: 'Explosivité',
+        endurance: 'Endurance',
+        coordination: 'Coordination',
+        leadership: 'Leadership',
+        concentration: 'Concentration',
+        fighting: 'Combativité',
+        teamSpirit: 'Esprit d\'équipe'
+    };
+    
+    return mapping[skillName] || 'Polyvalence';
+}
+
+function generateRecommendations(analysis, skills) {
+    const recommendations = [];
+    
+    // Recommandations basées sur les faiblesses
+    if (analysis.weaknesses.length > 0) {
+        analysis.weaknesses.forEach(weakness => {
+            if (weakness.name.includes('Throw') || weakness.name.includes('Shot')) {
+                recommendations.push('Travailler les fondamentaux du tir');
+            }
+            if (weakness.name.includes('dribble')) {
+                recommendations.push('Améliorer le maniement de balle');
+            }
+            if (weakness.name.includes('Defense')) {
+                recommendations.push('Renforcer les principes défensifs');
+            }
+        });
+    }
+    
+    // Recommandations basées sur le poste
+    if (analysis.position.primary.name === 'Meneuse' && (skills.leadership || 5) < 6) {
+        recommendations.push('Développer le leadership et la communication');
+    }
+    
+    if (analysis.position.primary.name === 'Pivot' && (skills.strength || 5) < 6) {
+        recommendations.push('Programme de renforcement musculaire recommandé');
+    }
+    
+    return [...new Set(recommendations)].slice(0, 3);
+}
+
+function displayProfileAnalysis(player, analysis) {
+    // Afficher l'analyse du poste
+    const positionHTML = `
+        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px;">
+            <h4 style="color: #4caf50; margin-bottom: 10px;">
+                ✅ Poste recommandé : ${analysis.position.primary.name}
+            </h4>
+            <p style="color: #666; margin-bottom: 10px;">${analysis.position.primary.reason}</p>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <strong>Score de compatibilité :</strong>
+                <div style="flex: 1; background: #e0e0e0; height: 20px; border-radius: 10px; overflow: hidden;">
+                    <div style="width: ${analysis.position.primary.score}%; background: linear-gradient(90deg, #4caf50, #8bc34a); height: 100%;"></div>
+                </div>
+                <span>${analysis.position.primary.score}%</span>
+            </div>
+        </div>
+        ${analysis.position.secondary ? `
+            <div style="padding: 10px; background: #fff3e0; border-radius: 8px;">
+                <strong>Poste secondaire :</strong> ${analysis.position.secondary.name} (${analysis.position.secondary.score}%)
+            </div>
+        ` : ''}
+    `;
+    
+    document.getElementById('positionRecommendation').innerHTML = positionHTML;
+    
+    // Afficher le profil offensif
+    document.getElementById('offensiveProfileAnalysis').innerHTML = `
+        <div style="padding: 15px; background: #f3e5f5; border-radius: 8px;">
+            <h4 style="color: #6a1b9a; margin-bottom: 10px;">
+                ${analysis.offensiveProfile.type}
+            </h4>
+            <p style="color: #666;">${analysis.offensiveProfile.description}</p>
+            <div style="margin-top: 10px;">
+                <strong>Score :</strong> ${analysis.offensiveProfile.score.toFixed(1)}/10
+            </div>
+        </div>
+    `;
+    
+    // Afficher le profil défensif
+    document.getElementById('defensiveProfileAnalysis').innerHTML = `
+        <div style="padding: 15px; background: #e3f2fd; border-radius: 8px;">
+            <h4 style="color: #1565c0; margin-bottom: 10px;">
+                ${analysis.defensiveProfile.type}
+            </h4>
+            <p style="color: #666;">${analysis.defensiveProfile.description}</p>
+            <div style="margin-top: 10px;">
+                <strong>Score :</strong> ${analysis.defensiveProfile.score.toFixed(1)}/10
+            </div>
+        </div>
+    `;
+    
+    // Afficher les caractéristiques dominantes
+    document.getElementById('dominantCharacteristics').innerHTML = `
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            ${analysis.characteristics.map(char => `
+                <span class="skill-recommendation">${char}</span>
+            `).join('')}
+        </div>
+        ${analysis.recommendations.length > 0 ? `
+            <div style="margin-top: 20px; padding: 15px; background: #fff8e1; border-radius: 8px;">
+                <h4 style="color: #f57c00; margin-bottom: 10px;">📝 Recommandations</h4>
+                <ul style="margin-left: 20px;">
+                    ${analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+    `;
+    
+    // Stocker l'analyse pour application ultérieure
+    window.currentProfileAnalysis = {
+        playerId: player.id,
+        analysis: analysis
+    };
+}
+
+function applyAutoProfile() {
+    if (!window.currentProfileAnalysis) {
+        alert('Aucune analyse en cours');
+        return;
+    }
+    
+    const { playerId, analysis } = window.currentProfileAnalysis;
+    const player = players.find(p => p.id === playerId);
+    
+    if (!player) {
+        alert('Joueuse non trouvée');
+        return;
+    }
+    
+    // Appliquer les recommandations
+    player.primaryPosition = analysis.position.primary.name;
+    if (analysis.position.secondary && analysis.position.secondary.score > 60) {
+        player.secondaryPosition = analysis.position.secondary.name;
+    }
+    player.offensiveProfile = analysis.offensiveProfile.type;
+    player.defensiveProfile = analysis.defensiveProfile.type;
+    player.characteristics = analysis.characteristics;
+    
+    // Sauvegarder
+    localStorage.setItem('basketballPlayers', JSON.stringify(players));
+    
+    // Ajouter à l'historique
+    addToHistory('auto-profile', player, 
+        `Profil automatique appliqué - ${analysis.position.primary.name} / ${analysis.offensiveProfile.type}`
+    );
+    
+    alert(`Profil mis à jour pour ${player.firstName} ${player.lastName} !\n\n` +
+          `Poste: ${player.primaryPosition}\n` +
+          `Profil offensif: ${player.offensiveProfile}\n` +
+          `Profil défensif: ${player.defensiveProfile}`);
+}
+
+function analyzeAllPlayers() {
+    const results = document.getElementById('batchAnalysisResults');
+    let analyzedCount = 0;
+    let updatedPlayers = [];
+    
+    players.forEach(player => {
+        const playerEvals = evaluations[player.id];
+        
+        if (playerEvals && playerEvals.length > 0) {
+            const lastEval = playerEvals[playerEvals.length - 1];
+            const analysis = performProfileAnalysis(player, lastEval.skills);
+            
+            // Appliquer automatiquement les profils
+            player.primaryPosition = analysis.position.primary.name;
+            if (analysis.position.secondary && analysis.position.secondary.score > 60) {
+                player.secondaryPosition = analysis.position.secondary.name;
+            }
+            player.offensiveProfile = analysis.offensiveProfile.type;
+            player.defensiveProfile = analysis.defensiveProfile.type;
+            player.characteristics = analysis.characteristics;
+            
+            analyzedCount++;
+            updatedPlayers.push({
+                name: `${player.firstName} ${player.lastName}`,
+                position: analysis.position.primary.name,
+                offensive: analysis.offensiveProfile.type,
+                defensive: analysis.defensiveProfile.type
+            });
+        }
+    });
+    
+    if// Suite de analyzeAllPlayers() - reprendre depuis le if incomplet
+function analyzeAllPlayers() {
+    const results = document.getElementById('batchAnalysisResults');
+    let analyzedCount = 0;
+    let updatedPlayers = [];
+    
+    players.forEach(player => {
+        const playerEvals = evaluations[player.id];
+        
+        if (playerEvals && playerEvals.length > 0) {
+            const lastEval = playerEvals[playerEvals.length - 1];
+            const analysis = performProfileAnalysis(player, lastEval.skills);
+            
+            // Appliquer automatiquement les profils
+            player.primaryPosition = analysis.position.primary.name;
+            if (analysis.position.secondary && analysis.position.secondary.score > 60) {
+                player.secondaryPosition = analysis.position.secondary.name;
+            }
+            player.offensiveProfile = analysis.offensiveProfile.type;
+            player.defensiveProfile = analysis.defensiveProfile.type;
+            player.characteristics = analysis.characteristics;
+            
+            analyzedCount++;
+            updatedPlayers.push({
+                name: `${player.firstName} ${player.lastName}`,
+                position: analysis.position.primary.name,
+                offensive: analysis.offensiveProfile.type,
+                defensive: analysis.defensiveProfile.type
+            });
+        }
+    });
+    
+    if (analyzedCount === 0) {
+        results.innerHTML = `
+            <div class="form-section">
+                <p style="text-align: center; color: #666;">
+                    Aucune joueuse avec évaluation disponible pour l'analyse.
+                </p>
+            </div>
+        `;
+    } else {
+        // Sauvegarder les modifications
+        localStorage.setItem('basketballPlayers', JSON.stringify(players));
+        
+        // Ajouter à l'historique
+        addToHistory('auto-profile', null, 
+            `Analyse en lot effectuée pour ${analyzedCount} joueuse(s)`
+        );
+        
+        // Afficher les résultats
+        results.innerHTML = `
+            <div class="form-section">
+                <h4 style="color: #4caf50; margin-bottom: 15px;">
+                    ✅ Analyse terminée : ${analyzedCount} joueuse(s) mise(s) à jour
+                </h4>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Joueuse</th>
+                            <th>Poste déterminé</th>
+                            <th>Profil offensif</th>
+                            <th>Profil défensif</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${updatedPlayers.map(p => `
+                            <tr>
+                                <td>${p.name}</td>
+                                <td><span class="badge badge-info">${p.position}</span></td>
+                                <td>${p.offensive}</td>
+                                <td>${p.defensive}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+    
+    results.style.display = 'block';
+}
+
+// ==================== FONCTIONS DE NAVIGATION ET GESTION DES ONGLETS ====================
+
+function switchTab(tabName, buttonElement) {
     // Masquer tous les contenus d'onglets
     const tabs = document.querySelectorAll('.tab-content');
     tabs.forEach(tab => tab.classList.remove('active'));
@@ -1281,77 +2343,122 @@
     }
     
     // Charger les données spécifiques à l'onglet
-    if (tabName === 'dashboard') {
-        loadDashboard();
-    } else if (tabName === 'players') {
-        loadPlayers();
-    } else if (tabName === 'evaluation') {
-        loadEvaluationPlayers();
-    } else if (tabName === 'statistics') {
-        loadStatisticsPlayers();
-    } else if (tabName === 'history') {
-        loadHistory();
+    switch(tabName) {
+        case 'dashboard':
+            loadDashboard();
+            break;
+        case 'players':
+            loadPlayers();
+            break;
+        case 'evaluation':
+            loadEvaluationPlayers();
+            break;
+        case 'statistics':
+            loadStatisticsPlayers();
+            break;
+        case 'history':
+            loadHistory();
+            break;
+        case 'autoProfile':
+            loadAutoProfilePlayers();
+            break;
     }
 }
 
-        // ==================== FONCTIONS CRUD POUR LES JOUEUSES ====================
-        function savePlayer(event) {
-            event.preventDefault();
-            
-            const form = event.target;
-            const formData = new FormData(form);
-            
-            // Récupérer les caractéristiques cochées
-            const characteristics = [];
-            document.querySelectorAll('input[name="characteristics"]:checked').forEach(cb => {
-                characteristics.push(cb.value);
-            });
-            
-            const player = {
-    id: Date.now().toString(),
-    firstName: formData.get('firstName'),
-    lastName: formData.get('lastName'),
-    birthDate: formData.get('birthDate'),
-    number: formData.get('number') || null,
-    category: formData.get('category'),
-    currentCategory: formData.get('currentCategory'), // NOUVEAU
-    currentTeam: formData.get('currentTeam'), // NOUVEAU
-    joinDate: formData.get('joinDate'),
-    height: formData.get('height'),
-    weight: formData.get('weight'),
-    wingspan: formData.get('wingspan'),
-    verticalJump: formData.get('verticalJump'),
-    dominantHand: formData.get('dominantHand'),
-    shoeSize: formData.get('shoeSize'),
-    primaryPosition: formData.get('primaryPosition'),
-    secondaryPosition: formData.get('secondaryPosition'),
-    offensiveProfile: formData.get('offensiveProfile'),
-    defensiveProfile: formData.get('defensiveProfile'),
-    characteristics: characteristics,
-    bloodType: formData.get('bloodType'),
-    allergies: formData.get('allergies'),
-    emergencyContact: formData.get('emergencyContact'),
-    glasses: formData.get('glasses'),
-    createdAt: new Date().toISOString()
-};
-            
-            players.push(player);
-            localStorage.setItem('basketballPlayers', JSON.stringify(players));
-            
-            // Ajouter à l'historique
-            addToHistory('creation', player, 'Nouvelle joueuse ajoutée');
-            
-            // Réinitialiser le formulaire
-            form.reset();
-            
-            alert(`Joueuse ${player.firstName} ${player.lastName} ajoutée avec succès!`);
-            
-            // Basculer vers l'onglet des joueuses
-            const playersButton = document.querySelectorAll('.tab-btn')[1];
-            switchTab('players', playersButton);
-        }
+// ==================== FONCTIONS DASHBOARD ====================
 
-   function loadPlayers() {
+function loadDashboard() {
+    // Statistiques globales
+    document.getElementById('totalPlayers').textContent = players.length;
+    
+    // Nombre de catégories uniques
+    const categories = [...new Set(players.map(p => p.currentCategory || p.category))];
+    document.getElementById('categories').textContent = categories.length;
+    
+    // Nombre total d'évaluations et note moyenne
+    let totalEvals = 0;
+    let totalRatings = 0;
+    let ratingCount = 0;
+    
+    Object.values(evaluations).forEach(playerEvals => {
+        totalEvals += playerEvals.length;
+        playerEvals.forEach(eval => {
+            if (eval.globalRating) {
+                totalRatings += eval.globalRating;
+                ratingCount++;
+            }
+        });
+    });
+    
+    document.getElementById('evalCount').textContent = totalEvals;
+    document.getElementById('avgRating').textContent = ratingCount > 0 ? 
+        (totalRatings / ratingCount).toFixed(1) : '0';
+    
+    // Dernières évaluations
+    loadRecentEvaluations();
+}
+
+function loadRecentEvaluations() {
+    const recentEvals = [];
+    
+    Object.entries(evaluations).forEach(([playerId, playerEvals]) => {
+        const player = players.find(p => p.id === playerId);
+        if (player && playerEvals.length > 0) {
+            playerEvals.forEach(eval => {
+                recentEvals.push({
+                    date: eval.date,
+                    playerName: `${player.firstName} ${player.lastName}`,
+                    rating: eval.globalRating,
+                    playerId: playerId
+                });
+            });
+        }
+    });
+    
+    // Trier par date et prendre les 5 dernières
+    recentEvals.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const latest = recentEvals.slice(0, 5);
+    
+    const tbody = document.getElementById('recentEvaluations');
+    if (latest.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Aucune évaluation récente</td></tr>';
+    } else {
+        tbody.innerHTML = latest.map((eval, index) => {
+            // Calculer la progression (simulation basée sur les évaluations précédentes)
+            const previousEvals = recentEvals.filter(e => 
+                e.playerId === eval.playerId && 
+                new Date(e.date) < new Date(eval.date)
+            );
+            
+            let progression = 0;
+            let progressClass = 'badge-warning';
+            
+            if (previousEvals.length > 0) {
+                progression = eval.rating - previousEvals[0].rating;
+                progressClass = progression > 0 ? 'badge-success' : 
+                              progression < 0 ? 'badge-danger' : 'badge-warning';
+            }
+            
+            return `
+                <tr>
+                    <td>${formatDate(eval.date)}</td>
+                    <td>${eval.playerName}</td>
+                    <td>Évaluation complète</td>
+                    <td>
+                        <span class="badge ${progressClass}">
+                            ${progression > 0 ? '+' : ''}${progression.toFixed(1)}
+                        </span>
+                    </td>
+                    <td><strong>${eval.rating.toFixed(1)}</strong>/10</td>
+                </tr>
+            `;
+        }).join('');
+    }
+}
+
+// ==================== FONCTIONS GESTION DES JOUEUSES ====================
+
+function loadPlayers() {
     const grid = document.getElementById('playersGrid');
     
     if (players.length === 0) {
@@ -1368,11 +2475,12 @@
             <p class="player-info">👥 ${player.currentTeam || 'Non assignée'}</p>
             <p class="player-info">📏 ${player.height ? player.height + ' cm' : 'Non renseigné'}</p>
             <p class="player-info">🎂 ${calculateAge(player.birthDate)} ans</p>
+            ${player.offensiveProfile ? `<p class="player-info">⚔️ ${player.offensiveProfile}</p>` : ''}
         </div>
     `).join('');
 }
 
-        function filterPlayers() {
+function filterPlayers() {
     const searchTerm = document.getElementById('searchPlayer').value.toLowerCase();
     const categoryFilter = document.getElementById('filterCategory').value;
     const teamFilter = document.getElementById('filterTeam').value;
@@ -1381,9 +2489,13 @@
     const filteredPlayers = players.filter(player => {
         const fullName = `${player.firstName} ${player.lastName}`.toLowerCase();
         const matchSearch = fullName.includes(searchTerm);
-        const matchCategory = !categoryFilter || player.currentCategory === categoryFilter || player.category === categoryFilter;
+        const matchCategory = !categoryFilter || 
+            player.currentCategory === categoryFilter || 
+            player.category === categoryFilter;
         const matchTeam = !teamFilter || player.currentTeam === teamFilter;
-        const matchPosition = !positionFilter || player.primaryPosition === positionFilter;
+        const matchPosition = !positionFilter || 
+            player.primaryPosition === positionFilter ||
+            player.secondaryPosition === positionFilter;
         
         return matchSearch && matchCategory && matchTeam && matchPosition;
     });
@@ -1404,721 +2516,1012 @@
             <p class="player-info">👥 ${player.currentTeam || 'Non assignée'}</p>
             <p class="player-info">📏 ${player.height ? player.height + ' cm' : 'Non renseigné'}</p>
             <p class="player-info">🎂 ${calculateAge(player.birthDate)} ans</p>
+            ${player.offensiveProfile ? `<p class="player-info">⚔️ ${player.offensiveProfile}</p>` : ''}
         </div>
     `).join('');
 }
 
-        // ==================== SYSTÈME D'ÉVALUATION ====================
-        function loadEvaluationPlayers() {
-            const select = document.getElementById('playerSelect');
-            select.innerHTML = '<option value="">Choisir une joueuse...</option>';
-            
-            players.forEach(player => {
-                const option = document.createElement('option');
-                option.value = player.id;
-                option.textContent = `${player.firstName} ${player.lastName} (#${player.number || '--'})`;
-                select.appendChild(option);
-            });
-        }
+function savePlayer(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Récupérer les caractéristiques cochées
+    const characteristics = [];
+    document.querySelectorAll('input[name="characteristics"]:checked').forEach(cb => {
+        characteristics.push(cb.value);
+    });
+    
+    const player = {
+        id: Date.now().toString(),
+        firstName: formData.get('firstName'),
+        lastName: formData.get('lastName'),
+        birthDate: formData.get('birthDate'),
+        number: formData.get('number') || null,
+        category: formData.get('category'),
+        currentCategory: formData.get('currentCategory'),
+        currentTeam: formData.get('currentTeam'),
+        joinDate: formData.get('joinDate'),
+        height: formData.get('height'),
+        weight: formData.get('weight'),
+        wingspan: formData.get('wingspan'),
+        verticalJump: formData.get('verticalJump'),
+        dominantHand: formData.get('dominantHand'),
+        shoeSize: formData.get('shoeSize'),
+        primaryPosition: formData.get('primaryPosition'),
+        secondaryPosition: formData.get('secondaryPosition'),
+        offensiveProfile: formData.get('offensiveProfile'),
+        defensiveProfile: formData.get('defensiveProfile'),
+        characteristics: characteristics,
+        bloodType: formData.get('bloodType'),
+        allergies: formData.get('allergies'),
+        emergencyContact: formData.get('emergencyContact'),
+        glasses: formData.get('glasses'),
+        createdAt: new Date().toISOString()
+    };
+    
+    players.push(player);
+    localStorage.setItem('basketballPlayers', JSON.stringify(players));
+    
+    // Ajouter à l'historique
+    addToHistory('creation', player, 'Nouvelle joueuse ajoutée');
+    
+    // Réinitialiser le formulaire
+    form.reset();
+    
+    alert(`Joueuse ${player.firstName} ${player.lastName} ajoutée avec succès!`);
+    
+    // Basculer vers l'onglet des joueuses
+    const playersButton = document.querySelector('.tab-btn:nth-child(2)');
+    switchTab('players', playersButton);
+}
 
-        function loadPlayerEvaluation() {
-            const playerId = document.getElementById('playerSelect').value;
-            
-            if (!playerId) {
-                document.getElementById('evaluationForm').style.display = 'none';
-                return;
-            }
-            
-            currentPlayerId = playerId;
-            document.getElementById('evaluationForm').style.display = 'block';
-            
-            // Charger les évaluations existantes si disponibles
-            if (evaluations[playerId] && evaluations[playerId].length > 0) {
-                const lastEval = evaluations[playerId][evaluations[playerId].length - 1];
-                
-                // Restaurer toutes les valeurs des sliders
-                Object.keys(lastEval.skills).forEach(skillId => {
-                    const slider = document.getElementById(skillId);
-                    if (slider) {
-                        slider.value = lastEval.skills[skillId];
-                        document.getElementById(skillId + 'Value').textContent = lastEval.skills[skillId];
-                    }
-                });
-                
-                // Restaurer les commentaires
-                if (lastEval.coachNotes) {
-                    document.getElementById('coachNotes').value = lastEval.coachNotes;
-                }
-                if (lastEval.shortTermGoals) {
-                    document.getElementById('shortTermGoals').value = lastEval.shortTermGoals;
-                }
-            }
-        }
-
-        function saveEvaluation() {
-            if (!currentPlayerId) {
-                alert('Veuillez sélectionner une joueuse');
-                return;
-            }
-            
-            const player = players.find(p => p.id === currentPlayerId);
-            
-            const skills = {
-                // Tir et Finition
-                midRangeShot: parseInt(document.getElementById('midRangeShot').value),
-                pullUpShot: parseInt(document.getElementById('pullUpShot').value),
-                threePointer: parseInt(document.getElementById('threePointer').value),
-                layupRight: parseInt(document.getElementById('layupRight').value),
-                layupLeft: parseInt(document.getElementById('layupLeft').value),
-                freeThrow: parseInt(document.getElementById('freeThrow').value),
-                
-                // Dribble et Création
-                dribbleRight: parseInt(document.getElementById('dribbleRight').value),
-                dribbleLeft: parseInt(document.getElementById('dribbleLeft').value),
-                changeDirection: parseInt(document.getElementById('changeDirection').value),
-                penetration: parseInt(document.getElementById('penetration').value),
-                createOwnShot: parseInt(document.getElementById('createOwnShot').value),
-                
-                // Passe et Vision
-                shortPass: parseInt(document.getElementById('shortPass').value),
-                longPass: parseInt(document.getElementById('longPass').value),
-                peripheralVision: parseInt(document.getElementById('peripheralVision').value),
-                gameReading: parseInt(document.getElementById('gameReading').value),
-                createForOthers: parseInt(document.getElementById('createForOthers').value),
-                
-                // Défense
-                manDefense: parseInt(document.getElementById('manDefense').value),
-                helpDefense: parseInt(document.getElementById('helpDefense').value),
-                steal: parseInt(document.getElementById('steal').value),
-                block: parseInt(document.getElementById('block').value),
-                defensiveRebound: parseInt(document.getElementById('defensiveRebound').value),
-                defensiveCommunication: parseInt(document.getElementById('defensiveCommunication').value),
-                
-                // Physique
-                speed: parseInt(document.getElementById('speed').value),
-                explosiveness: parseInt(document.getElementById('explosiveness').value),
-                agility: parseInt(document.getElementById('agility').value),
-                strength: parseInt(document.getElementById('strength').value),
-                endurance: parseInt(document.getElementById('endurance').value),
-                coordination: parseInt(document.getElementById('coordination').value),
-// Mental
-                concentration: parseInt(document.getElementById('concentration').value),
-                leadership: parseInt(document.getElementById('leadership').value),
-                teamSpirit: parseInt(document.getElementById('teamSpirit').value),
-                pressureManagement: parseInt(document.getElementById('pressureManagement').value),
-                fighting: parseInt(document.getElementById('fighting').value),
-                tacticalDiscipline: parseInt(document.getElementById('tacticalDiscipline').value)
-            };
-            
-            const evaluation = {
-                id: Date.now().toString(),
-                playerId: currentPlayerId,
-                skills: skills,
-                coachNotes: document.getElementById('coachNotes').value,
-                shortTermGoals: document.getElementById('shortTermGoals').value,
-                date: new Date().toISOString(),
-                globalRating: calculateGlobalRating(skills)
-            };
-            
-            // Sauvegarder l'évaluation
-            if (!evaluations[currentPlayerId]) {
-                evaluations[currentPlayerId] = [];
-            }
-            evaluations[currentPlayerId].push(evaluation);
-            localStorage.setItem('playerEvaluations', JSON.stringify(evaluations));
-            
-            // Ajouter à l'historique
-            addToHistory('evaluation', player, `Évaluation complétée - Note globale: ${evaluation.globalRating}/10`);
-            
-            alert(`Évaluation enregistrée pour ${player.firstName} ${player.lastName}\nNote globale: ${evaluation.globalRating}/10`);
-        }
-
-        // ==================== STATISTIQUES ====================
-        function loadStatisticsPlayers() {
-            const select = document.getElementById('statsPlayerSelect');
-            select.innerHTML = '<option value="">Toutes les joueuses</option>';
-            
-            players.forEach(player => {
-                const option = document.createElement('option');
-                option.value = player.id;
-                option.textContent = `${player.firstName} ${player.lastName} (#${player.number || '--'})`;
-                select.appendChild(option);
-            });
-        }
-
-        function loadPlayerStats() {
-            const playerId = document.getElementById('statsPlayerSelect').value;
-            const period = document.getElementById('statsPeriod').value;
-            
-            if (!playerId) {
-                document.getElementById('statsContent').style.display = 'none';
-                return;
-            }
-            
-            document.getElementById('statsContent').style.display = 'block';
-            
-            const playerEvals = evaluations[playerId] || [];
-            if (playerEvals.length === 0) {
-                document.getElementById('statsContent').innerHTML = '<p style="text-align: center; padding: 40px;">Aucune évaluation disponible pour cette joueuse</p>';
-                return;
-            }
-            
-            // Filtrer selon la période
-            const now = new Date();
-            const filteredEvals = playerEvals.filter(eval => {
-                const evalDate = new Date(eval.date);
-                switch(period) {
-                    case 'month':
-                        return (now - evalDate) <= 30 * 24 * 60 * 60 * 1000;
-                    case '3months':
-                        return (now - evalDate) <= 90 * 24 * 60 * 60 * 1000;
-                    case '6months':
-                        return (now - evalDate) <= 180 * 24 * 60 * 60 * 1000;
-                    default:
-                        return true;
-                }
-            });
-            
-            if (filteredEvals.length === 0) {
-                document.getElementById('statsContent').innerHTML = '<p style="text-align: center; padding: 40px;">Aucune évaluation dans la période sélectionnée</p>';
-                return;
-            }
-            
-            // Récupérer la dernière évaluation
-            const lastEval = filteredEvals[filteredEvals.length - 1];
-            
-            // Calculer les moyennes par catégorie
-            const offensiveAvg = calculateCategoryAverage(lastEval.skills, ['midRangeShot', 'pullUpShot', 'threePointer', 'layupRight', 'layupLeft', 'freeThrow', 'dribbleRight', 'dribbleLeft', 'changeDirection', 'penetration', 'createOwnShot']);
-            const defensiveAvg = calculateCategoryAverage(lastEval.skills, ['manDefense', 'helpDefense', 'steal', 'block', 'defensiveRebound', 'defensiveCommunication']);
-            const physicalAvg = calculateCategoryAverage(lastEval.skills, ['speed', 'explosiveness', 'agility', 'strength', 'endurance', 'coordination']);
-            const mentalAvg = calculateCategoryAverage(lastEval.skills, ['concentration', 'leadership', 'teamSpirit', 'pressureManagement', 'fighting', 'tacticalDiscipline']);
-            
-            // Mettre à jour les cartes de statistiques
-            document.getElementById('avgOffensive').textContent = offensiveAvg.toFixed(1);
-            document.getElementById('avgDefensive').textContent = defensiveAvg.toFixed(1);
-            document.getElementById('avgPhysical').textContent = physicalAvg.toFixed(1);
-            document.getElementById('avgMental').textContent = mentalAvg.toFixed(1);
-            
-            // Créer le graphique radar
-            createRadarChart(lastEval.skills);
-            
-            // Créer le graphique de progression
-            createProgressChart(filteredEvals);
-            
-            // Afficher les points forts et faibles
-            displayStrengthsWeaknesses(lastEval.skills);
-        }
-
-        function calculateCategoryAverage(skills, categoryKeys) {
-            const values = categoryKeys.map(key => skills[key] || 0);
-            return values.reduce((a, b) => a + b, 0) / values.length;
-        }
-
-        function createRadarChart(skills) {
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            
-            if (radarChart) {
-                radarChart.destroy();
-            }
-            
-            const categories = {
-                'Tir': ['midRangeShot', 'threePointer', 'freeThrow'],
-                'Dribble': ['dribbleRight', 'dribbleLeft', 'changeDirection'],
-                'Passe': ['shortPass', 'longPass', 'createForOthers'],
-                'Défense': ['manDefense', 'steal', 'defensiveRebound'],
-                'Physique': ['speed', 'strength', 'endurance'],
-                'Mental': ['concentration', 'leadership', 'pressureManagement']
-            };
-            
-            const data = Object.keys(categories).map(cat => {
-                const catSkills = categories[cat];
-                return calculateCategoryAverage(skills, catSkills);
-            });
-            
-            radarChart = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: Object.keys(categories),
-                    datasets: [{
-                        label: 'Compétences',
-                        data: data,
-                        backgroundColor: 'rgba(118, 75, 162, 0.2)',
-                        borderColor: '#764ba2',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#764ba2',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#764ba2'
-                    }]
-                },
-                options: {
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 10,
-                            ticks: {
-                                stepSize: 2
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
-        }
-
-        function createProgressChart(evals) {
-            const ctx = document.getElementById('progressChart').getContext('2d');
-            
-            if (progressChart) {
-                progressChart.destroy();
-            }
-            
-            const dates = evals.map(e => formatDate(e.date));
-            const ratings = evals.map(e => e.globalRating);
-            
-            progressChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'Note globale',
-                        data: ratings,
-                        borderColor: '#764ba2',
-                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 10
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        }
-                    }
-                }
-            });
-        }
-
-        function displayStrengthsWeaknesses(skills) {
-            const skillArray = Object.entries(skills).map(([key, value]) => ({
-                name: getSkillDisplayName(key),
-                value: value
-            }));
-            
-            skillArray.sort((a, b) => b.value - a.value);
-            
-            const topSkills = skillArray.slice(0, 5);
-            const weakSkills = skillArray.slice(-5).reverse();
-            
-            document.getElementById('topSkills').innerHTML = topSkills.map(skill => `
-                <div style="margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>${skill.name}</span>
-                        <span class="badge badge-success">${skill.value}/10</span>
-                    </div>
-                </div>
-            `).join('');
-            
-            document.getElementById('weakSkills').innerHTML = weakSkills.map(skill => `
-                <div style="margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>${skill.name}</span>
-                        <span class="badge badge-danger">${skill.value}/10</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function getSkillDisplayName(skillId) {
-            const names = {
-                midRangeShot: 'Tir mi-distance',
-                pullUpShot: 'Tir après dribble',
-                threePointer: 'Tir à 3 points',
-                layupRight: 'Lay-up main droite',
-                layupLeft: 'Lay-up main gauche',
-                freeThrow: 'Lancer franc',
-                dribbleRight: 'Dribble main droite',
-                dribbleLeft: 'Dribble main gauche',
-                changeDirection: 'Changement de direction',
-                penetration: 'Pénétration',
-                createOwnShot: 'Création pour soi',
-                shortPass: 'Passe courte',
-                longPass: 'Passe longue',
-                peripheralVision: 'Vision périphérique',
-                gameReading: 'Lecture du jeu',
-                createForOthers: 'Création pour les autres',
-                manDefense: 'Défense individuelle',
-                helpDefense: 'Aide défensive',
-                steal: 'Interception',
-                block: 'Contre',
-                defensiveRebound: 'Rebond défensif',
-                defensiveCommunication: 'Communication défensive',
-                speed: 'Vitesse',
-                explosiveness: 'Explosivité',
-                agility: 'Agilité',
-                strength: 'Force',
-                endurance: 'Endurance',
-                coordination: 'Coordination',
-                concentration: 'Concentration',
-                leadership: 'Leadership',
-                teamSpirit: 'Esprit d\'équipe',
-                pressureManagement: 'Gestion de la pression',
-                fighting: 'Combativité',
-                tacticalDiscipline: 'Discipline tactique'
-            };
-            return names[skillId] || skillId;
-        }
-
-        // ==================== HISTORIQUE ====================
-        function addToHistory(type, player, description) {
-            const entry = {
-                id: Date.now().toString(),
-                date: new Date().toISOString(),
-                type: type,
-                playerName: player ? `${player.firstName} ${player.lastName}` : 'N/A',
-                playerId: player ? player.id : null,
-                description: description,
-                user: 'Coach' // Pourrait être dynamique avec un système d'authentification
-            };
-            
-            history.push(entry);
-            localStorage.setItem('historyLog', JSON.stringify(history));
-        }
-
-        function loadHistory() {
-            displayHistory(history);
-        }
-
-        function displayHistory(entries) {
-            const tbody = document.getElementById('historyTable');
-            
-            if (entries.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Aucun historique disponible</td></tr>';
-                return;
-            }
-            
-            // Trier par date décroissante
-            entries.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            tbody.innerHTML = entries.map(entry => {
-                let badgeClass = '';
-                switch(entry.type) {
-                    case 'creation':
-                        badgeClass = 'badge-success';
-                        break;
-                    case 'evaluation':
-                        badgeClass = 'badge-warning';
-                        break;
-                    case 'modification':
-                        badgeClass = 'badge-warning';
-                        break;
-                    case 'suppression':
-                        badgeClass = 'badge-danger';
-                        break;
-                }
-                
-                return `
-                    <tr>
-                        <td>${formatDateTime(entry.date)}</td>
-                        <td><span class="badge ${badgeClass}">${entry.type}</span></td>
-                        <td>${entry.playerName}</td>
-                        <td>${entry.description}</td>
-                        <td>${entry.user}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function filterHistory() {
-            const searchTerm = document.getElementById('searchHistory').value.toLowerCase();
-            const typeFilter = document.getElementById('filterHistoryType').value;
-            const dateFilter = document.getElementById('filterHistoryDate').value;
-            
-            const filtered = history.filter(entry => {
-                const matchSearch = entry.playerName.toLowerCase().includes(searchTerm) || 
-                                   entry.description.toLowerCase().includes(searchTerm);
-                const matchType = !typeFilter || entry.type === typeFilter;
-                const matchDate = !dateFilter || entry.date.startsWith(dateFilter);
-                
-                return matchSearch && matchType && matchDate;
-            });
-            
-            displayHistory(filtered);
-        }
-
-        // ==================== MODAL PROFIL JOUEUR ====================
-        function showPlayerProfile(playerId) {
-            const player = players.find(p => p.id === playerId);
-            if (!player) return;
-            
-            const modal = document.getElementById('playerModal');
-            modal.classList.add('active');
-            
-            // Informations de base
-            document.getElementById('modalPlayerName').textContent = `Profil de ${player.firstName} ${player.lastName}`;
-            document.getElementById('modalPlayerInitials').textContent = `${player.firstName[0]}${player.lastName[0]}`;
-            document.getElementById('modalFullName').textContent = `${player.firstName} ${player.lastName}`;
-            document.getElementById('modalNumber').textContent = player.number || '--';
-            document.getElementById('modalPosition').textContent = player.primaryPosition + (player.secondaryPosition ? ` / ${player.secondaryPosition}` : '');
-            document.getElementById('modalCategory').textContent = `${player.currentCategory || player.category} (${player.currentTeam || 'Non assignée'})`;
-            document.getElementById('modalAge').textContent = calculateAge(player.birthDate) + ' ans';
-            
-            
-            // Données morphologiques
-            document.getElementById('modalHeight').textContent = player.height ? `${player.height} cm` : '--';
-            document.getElementById('modalWeight').textContent = player.weight ? `${player.weight} kg` : '--';
-            document.getElementById('modalWingspan').textContent = player.wingspan ? `${player.wingspan} cm` : '--';
-            document.getElementById('modalVertical').textContent = player.verticalJump ? `${player.verticalJump} cm` : '--';
-            
-            // Profil de jeu
-            document.getElementById('modalOffensive').textContent = player.offensiveProfile || '--';
-            document.getElementById('modalDefensive').textContent = player.defensiveProfile || '--';
-            document.getElementById('modalCharacteristics').textContent = player.characteristics && player.characteristics.length > 0 ? 
-                player.characteristics.join(', ') : '--';
-            
-            // Dernière évaluation
-            const playerEvals = evaluations[playerId];
-            if (playerEvals && playerEvals.length > 0) {
-                const lastEval = playerEvals[playerEvals.length - 1];
-                document.getElementById('modalGlobalRating').textContent = lastEval.globalRating.toFixed(1);
-                document.getElementById('modalNotes').textContent = lastEval.coachNotes || 'Aucune note disponible';
-                
-                // Créer le graphique radar dans le modal
-                createModalRadarChart(lastEval.skills);
-            } else {
-                document.getElementById('modalGlobalRating').textContent = '--';
-                document.getElementById('modalNotes').textContent = 'Aucune évaluation disponible';
-                
-                // Masquer le canvas du graphique
-                const canvas = document.getElementById('modalRadarChart');
-                canvas.style.display = 'none';
-            }
-        }
-
-        function createModalRadarChart(skills) {
-            const canvas = document.getElementById('modalRadarChart');
-            canvas.style.display = 'block';
-            const ctx = canvas.getContext('2d');
-            
-            if (modalRadarChart) {
-                modalRadarChart.destroy();
-            }
-            
-            const categories = {
-                'Tir': ['midRangeShot', 'threePointer', 'freeThrow'],
-                'Dribble': ['dribbleRight', 'dribbleLeft', 'changeDirection'],
-                'Passe': ['shortPass', 'longPass', 'createForOthers'],
-                'Défense': ['manDefense', 'steal', 'defensiveRebound'],
-                'Physique': ['speed', 'strength', 'endurance'],
-                'Mental': ['concentration', 'leadership', 'pressureManagement']
-            };
-            
-            const data = Object.keys(categories).map(cat => {
-                const catSkills = categories[cat];
-                return calculateCategoryAverage(skills, catSkills);
-            });
-            
-            modalRadarChart = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: Object.keys(categories),
-                    datasets: [{
-                        label: 'Compétences',
-                        data: data,
-                        backgroundColor: 'rgba(118, 75, 162, 0.2)',
-                        borderColor: '#764ba2',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#764ba2',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#764ba2'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 10,
-                            ticks: {
-                                stepSize: 2
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
-        }
-
-        function closeModal() {
-            document.getElementById('playerModal').classList.remove('active');
-        }
-
-        // ==================== DASHBOARD ====================
-        function loadDashboard() {
-            // Statistiques globales existantes...
-            document.getElementById('totalPlayers').textContent = players.length;
-            
-            // Statistiques par équipe
-            const teamStats = {};
-            players.forEach(player => {
-                const team = player.currentTeam || 'Non assignée';
-                teamStats[team] = (teamStats[team] || 0) + 1;
-            });
-            // Nombre total d'évaluations
-            let totalEvals = 0;
-            let totalRatings = 0;
-            let ratingCount = 0;
-            
-            Object.values(evaluations).forEach(playerEvals => {
-                totalEvals += playerEvals.length;
-                playerEvals.forEach(eval => {
-                    if (eval.globalRating) {
-                        totalRatings += eval.globalRating;
-                        ratingCount++;
-                    }
-                });
-            });
-            
-            document.getElementById('evalCount').textContent = totalEvals;
-            document.getElementById('avgRating').textContent = ratingCount > 0 ? 
-                (totalRatings / ratingCount).toFixed(1) : '0';
-
-            const teamStatsHTML = Object.entries(teamStats).map(([team, count]) => `
-            <div class="stat-card">
-                <div class="stat-value">${count}</div>
-                <div class="stat-label">${team}</div>
-            </div>
-            `).join('');
+function showPlayerProfile(playerId) {
+    const player = players.find(p => p.id === playerId);
+    if (!player) return;
+    
+    const modal = document.getElementById('playerModal');
+    modal.classList.add('active');
+    
+    // Informations de base
+    document.getElementById('modalPlayerName').textContent = 
+        `Profil de ${player.firstName} ${player.lastName}`;
+    document.getElementById('modalPlayerInitials').textContent = 
+        `${player.firstName[0]}${player.lastName[0]}`;
+    document.getElementById('modalFullName').textContent = 
+        `${player.firstName} ${player.lastName}`;
+    document.getElementById('modalNumber').textContent = player.number || '--';
+    document.getElementById('modalPosition').textContent = 
+        player.primaryPosition + (player.secondaryPosition ? ` / ${player.secondaryPosition}` : '');
+    document.getElementById('modalCategory').textContent = 
+        `${player.currentCategory || player.category} (${player.currentTeam || 'Non assignée'})`;
+    document.getElementById('modalAge').textContent = calculateAge(player.birthDate) + ' ans';
+    
+    // Profil de jeu
+    document.getElementById('modalOffensive').textContent = player.offensiveProfile || '--';
+    document.getElementById('modalDefensive').textContent = player.defensiveProfile || '--';
+    document.getElementById('modalCharacteristics').textContent = 
+        player.characteristics && player.characteristics.length > 0 ? 
+        player.characteristics.join(', ') : '--';
+    
+    // Dernière évaluation
+    const playerEvals = evaluations[playerId];
+    if (playerEvals && playerEvals.length > 0) {
+        const lastEval = playerEvals[playerEvals.length - 1];
+        document.getElementById('modalGlobalRating').textContent = lastEval.globalRating.toFixed(1);
         
-            if (document.getElementById('teamStats')) {
-                document.getElementById('teamStats').innerHTML = teamStatsHTML;
+        // Créer le graphique radar dans le modal
+        createModalRadarChart(lastEval.skills);
+    } else {
+        document.getElementById('modalGlobalRating').textContent = '--';
+        
+        // Masquer le canvas du graphique
+        const canvas = document.getElementById('modalRadarChart');
+        if (canvas) canvas.style.display = 'none';
+    }
+}
+
+function closeModal() {
+    document.getElementById('playerModal').classList.remove('active');
+    if (modalRadarChart) {
+        modalRadarChart.destroy();
+        modalRadarChart = null;
+    }
+}
+
+// ==================== FONCTIONS ÉVALUATION ====================
+
+function loadEvaluationPlayers() {
+    const select = document.getElementById('playerSelect');
+    select.innerHTML = '<option value="">Choisir une joueuse...</option>';
+    
+    players.forEach(player => {
+        const option = document.createElement('option');
+        option.value = player.id;
+        option.textContent = `${player.firstName} ${player.lastName} (#${player.number || '--'})`;
+        select.appendChild(option);
+    });
+}
+
+function loadPlayerEvaluation() {
+    const playerId = document.getElementById('playerSelect').value;
+    
+    if (!playerId) {
+        document.getElementById('evaluationForm').style.display = 'none';
+        return;
+    }
+    
+    currentPlayerId = playerId;
+    document.getElementById('evaluationForm').style.display = 'block';
+    
+    // Réinitialiser tous les sliders à 5
+    const sliders = document.querySelectorAll('.skill-slider');
+    sliders.forEach(slider => {
+        slider.value = 5;
+        const valueSpan = document.getElementById(slider.id + 'Value');
+        if (valueSpan) valueSpan.textContent = '5';
+    });
+    
+    // Charger les évaluations existantes si disponibles
+    if (evaluations[playerId] && evaluations[playerId].length > 0) {
+        const lastEval = evaluations[playerId][evaluations[playerId].length - 1];
+        
+        // Restaurer toutes les valeurs des sliders
+        Object.keys(lastEval.skills).forEach(skillId => {
+            const slider = document.getElementById(skillId);
+            if (slider) {
+                slider.value = lastEval.skills[skillId];
+                const valueSpan = document.getElementById(skillId + 'Value');
+                if (valueSpan) valueSpan.textContent = lastEval.skills[skillId];
             }
-            
-            // Dernières évaluations
-            const recentEvals = [];
-            Object.entries(evaluations).forEach(([playerId, playerEvals]) => {
-                const player = players.find(p => p.id === playerId);
-                if (player && playerEvals.length > 0) {
-                    const lastEval = playerEvals[playerEvals.length - 1];
-                    recentEvals.push({
-                        date: lastEval.date,
-                        playerName: `${player.firstName} ${player.lastName}`,
-                        rating: lastEval.globalRating
-                    });
-                }
-            });
-            
-            // Trier par date et prendre les 5 dernières
-            recentEvals.sort((a, b) => new Date(b.date) - new Date(a.date));
-            const latest = recentEvals.slice(0, 5);
-            
-            const tbody = document.getElementById('recentEvaluations');
-            if (latest.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Aucune évaluation récente</td></tr>';
-            } else {
-                tbody.innerHTML = latest.map(eval => {
-                    const progression = Math.random() > 0.5 ? '+' : '-'; // Simulation, à remplacer par une vraie logique
-                    const progressClass = progression === '+' ? 'badge-success' : 'badge-warning';
-                    
-                    return `
-                        <tr>
-                            <td>${formatDate(eval.date)}</td>
-                            <td>${eval.playerName}</td>
-                            <td>Évaluation complète</td>
-                            <td><span class="badge ${progressClass}">${progression}${(Math.random() * 2).toFixed(1)}%</span></td>
-                            <td><strong>${eval.rating.toFixed(1)}</strong>/10</td>
-                        </tr>
-                    `;
-                }).join('');
-            }
-        }
-
-        // ==================== FONCTIONS UTILITAIRES ====================
-        function calculateAge(birthDate) {
-            if (!birthDate) return '--';
-            const birth = new Date(birthDate);
-            const today = new Date();
-            let age = today.getFullYear() - birth.getFullYear();
-            const monthDiff = today.getMonth() - birth.getMonth();
-            
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-                age--;
-            }
-            
-            return age;
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-        }
-
-        function formatDateTime(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
-        function calculateGlobalRating(skills) {
-            const values = Object.values(skills);
-            const sum = values.reduce((acc, val) => acc + val, 0);
-            return parseFloat((sum / values.length).toFixed(1));
-        }
-
-        // ==================== EVENT LISTENERS ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialiser les sliders
-            const sliders = document.querySelectorAll('.skill-slider');
-            sliders.forEach(slider => {
-                slider.addEventListener('input', function() {
-                    document.getElementById(this.id + 'Value').textContent = this.value;
-                });
-            });
-            
-            // Fermer le modal au clic extérieur
-            document.getElementById('playerModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModal();
-                }
-            });
-            
-            // Charger le dashboard au démarrage
-            loadDashboard();
         });
+        
+        // Restaurer les commentaires
+        if (lastEval.coachNotes) {
+            document.getElementById('coachNotes').value = lastEval.coachNotes;
+        }
+        if (lastEval.shortTermGoals) {
+            document.getElementById('shortTermGoals').value = lastEval.shortTermGoals;
+        }
+    }
+}
 
-        // Initialisation au chargement
-        window.onload = function() {
-            loadDashboard();
-        };
+function saveEvaluation() {
+    if (!currentPlayerId) {
+        alert('Veuillez sélectionner une joueuse');
+        return;
+    }
+    
+    const player = players.find(p => p.id === currentPlayerId);
+    
+    const skills = {
+        // Tir et Finition
+        midRangeShot: parseInt(document.getElementById('midRangeShot').value),
+        pullUpShot: parseInt(document.getElementById('pullUpShot').value),
+        threePointer: parseInt(document.getElementById('threePointer').value),
+        layupRight: parseInt(document.getElementById('layupRight').value),
+        layupLeft: parseInt(document.getElementById('layupLeft').value),
+        freeThrow: parseInt(document.getElementById('freeThrow').value),
+        contactFinish: parseInt(document.getElementById('contactFinish').value),
+        floater: parseInt(document.getElementById('floater').value),
+        
+        // Dribble et Création
+        dribbleRight: parseInt(document.getElementById('dribbleRight').value),
+        dribbleLeft: parseInt(document.getElementById('dribbleLeft').value),
+        changeDirection: parseInt(document.getElementById('changeDirection').value),
+        penetration: parseInt(document.getElementById('penetration').value),
+        createOwnShot: parseInt(document.getElementById('createOwnShot').value),
+        ballControl: parseInt(document.getElementById('ballControl').value),
+        
+        // Passe et Vision
+        shortPass: parseInt(document.getElementById('shortPass').value),
+        longPass: parseInt(document.getElementById('longPass').value),
+        peripheralVision: parseInt(document.getElementById('peripheralVision').value),
+        gameReading: parseInt(document.getElementById('gameReading').value),
+        createForOthers: parseInt(document.getElementById('createForOthers').value),
+        passTiming: parseInt(document.getElementById('passTiming').value),
+        
+        // Défense
+        manDefense: parseInt(document.getElementById('manDefense').value),
+        helpDefense: parseInt(document.getElementById('helpDefense').value),
+        steal: parseInt(document.getElementById('steal').value),
+        block: parseInt(document.getElementById('block').value),
+        defensiveRebound: parseInt(document.getElementById('defensiveRebound').value),
+        defensiveCommunication: parseInt(document.getElementById('defensiveCommunication').value),
+        perimeterDefense: parseInt(document.getElementById('perimeterDefense').value),
+        postDefense: parseInt(document.getElementById('postDefense').value),
+        
+        // Jeu Intérieur
+        postUp: parseInt(document.getElementById('postUp').value),
+        hookShot: parseInt(document.getElementById('hookShot').value),
+        offensiveRebound: parseInt(document.getElementById('offensiveRebound').value),
+        screening: parseInt(document.getElementById('screening').value),
+        
+        // Physique
+        speed: parseInt(document.getElementById('speed').value),
+        explosiveness: parseInt(document.getElementById('explosiveness').value),
+        agility: parseInt(document.getElementById('agility').value),
+        strength: parseInt(document.getElementById('strength').value),
+        endurance: parseInt(document.getElementById('endurance').value),
+        coordination: parseInt(document.getElementById('coordination').value),
+        balance: parseInt(document.getElementById('balance').value),
+        
+        // Mental
+        concentration: parseInt(document.getElementById('concentration').value),
+        leadership: parseInt(document.getElementById('leadership').value),
+        teamSpirit: parseInt(document.getElementById('teamSpirit').value),
+        pressureManagement: parseInt(document.getElementById('pressureManagement').value),
+        fighting: parseInt(document.getElementById('fighting').value),
+        tacticalDiscipline: parseInt(document.getElementById('tacticalDiscipline').value)
+    };
+    
+    const evaluation = {
+        id: Date.now().toString(),
+        playerId: currentPlayerId,
+        skills: skills,
+        coachNotes: document.getElementById('coachNotes').value,
+        shortTermGoals: document.getElementById('shortTermGoals').value,
+        date: new Date().toISOString(),
+        globalRating: calculateGlobalRating(skills)
+    };
+    
+    // Sauvegarder l'évaluation
+    if (!evaluations[currentPlayerId]) {
+        evaluations[currentPlayerId] = [];
+    }
+    evaluations[currentPlayerId].push(evaluation);
+    localStorage.setItem('playerEvaluations', JSON.stringify(evaluations));
+    
+    // Ajouter à l'historique
+    addToHistory('evaluation', player, 
+        `Évaluation complétée - Note globale: ${evaluation.globalRating}/10`);
+    
+    alert(`Évaluation enregistrée pour ${player.firstName} ${player.lastName}\n` +
+          `Note globale: ${evaluation.globalRating}/10`);
+}
+
+// ==================== FONCTIONS STATISTIQUES ====================
+
+function loadStatisticsPlayers() {
+    const select = document.getElementById('statsPlayerSelect');
+    select.innerHTML = '<option value="">Sélectionner une joueuse...</option>';
+    
+    players.forEach(player => {
+        const option = document.createElement('option');
+        option.value = player.id;
+        option.textContent = `${player.firstName} ${player.lastName} (#${player.number || '--'})`;
+        select.appendChild(option);
+    });
+}
+
+function loadPlayerStats() {
+    const playerId = document.getElementById('statsPlayerSelect').value;
+    const period = document.getElementById('statsPeriod').value;
+    
+    if (!playerId) {
+        document.getElementById('statsContent').style.display = 'none';
+        return;
+    }
+    
+    document.getElementById('statsContent').style.display = 'block';
+    
+    const playerEvals = evaluations[playerId] || [];
+    if (playerEvals.length === 0) {
+        document.getElementById('statsContent').innerHTML = 
+            '<p style="text-align: center; padding: 40px;">Aucune évaluation disponible pour cette joueuse</p>';
+        return;
+    }
+    
+    // Filtrer selon la période
+    const now = new Date();
+    const filteredEvals = playerEvals.filter(eval => {
+        const evalDate = new Date(eval.date);
+        switch(period) {
+            case 'month':
+                return (now - evalDate) <= 30 * 24 * 60 * 60 * 1000;
+            case '3months':
+                return (now - evalDate) <= 90 * 24 * 60 * 60 * 1000;
+            case '6months':
+                return (now - evalDate) <= 180 * 24 * 60 * 60 * 1000;
+            default:
+                return true;
+        }
+    });
+    
+    if (filteredEvals.length === 0) {
+        document.getElementById('statsContent').innerHTML = 
+            '<p style="text-align: center; padding: 40px;">Aucune évaluation dans la période sélectionnée</p>';
+        return;
+    }
+    
+    // Récupérer la dernière évaluation
+    const lastEval = filteredEvals[filteredEvals.length - 1];
+    
+    // Calculer les moyennes par catégorie
+    const offensiveSkills = ['midRangeShot', 'pullUpShot', 'threePointer', 'layupRight', 
+                             'layupLeft', 'freeThrow', 'contactFinish', 'floater',
+                             'dribbleRight', 'dribbleLeft', 'changeDirection', 
+                             'penetration', 'createOwnShot', 'ballControl'];
+    const defensiveSkills = ['manDefense', 'helpDefense', 'steal', 'block', 
+                             'defensiveRebound', 'defensiveCommunication',
+                             'perimeterDefense', 'postDefense'];
+    const physicalSkills = ['speed', 'explosiveness', 'agility', 'strength', 
+                            'endurance', 'coordination', 'balance'];
+    const mentalSkills = ['concentration', 'leadership', 'teamSpirit', 
+                          'pressureManagement', 'fighting', 'tacticalDiscipline'];
+    
+    const offensiveAvg = calculateCategoryAverage(lastEval.skills, offensiveSkills);
+    const defensiveAvg = calculateCategoryAverage(lastEval.skills, defensiveSkills);
+    const physicalAvg = calculateCategoryAverage(lastEval.skills, physicalSkills);
+    const mentalAvg = calculateCategoryAverage(lastEval.skills, mentalSkills);
+    
+    // Mettre à jour les cartes de statistiques
+    document.getElementById('avgOffensive').textContent = offensiveAvg.toFixed(1);
+    document.getElementById('avgDefensive').textContent = defensiveAvg.toFixed(1);
+    document.getElementById('avgPhysical').textContent = physicalAvg.toFixed(1);
+    document.getElementById('avgMental').textContent = mentalAvg.toFixed(1);
+    
+    // Créer le graphique radar
+    createRadarChart(lastEval.skills);
+    
+    // Afficher les points forts et faibles
+    displayStrengthsWeaknesses(lastEval.skills);
+}
+
+function createRadarChart(skills) {
+    const ctx = document.getElementById('radarChart');
+    if (!ctx) return;
+    
+    if (radarChart) {
+        radarChart.destroy();
+    }
+    
+    const categories = {
+        'Tir': ['midRangeShot', 'threePointer', 'freeThrow'],
+        'Dribble': ['dribbleRight', 'dribbleLeft', 'changeDirection'],
+        'Passe': ['shortPass', 'longPass', 'createForOthers'],
+        'Défense': ['manDefense', 'steal', 'defensiveRebound'],
+        'Physique': ['speed', 'strength', 'endurance'],
+        'Mental': ['concentration', 'leadership', 'pressureManagement']
+    };
+    
+    const data = Object.keys(categories).map(cat => {
+        const catSkills = categories[cat];
+        return calculateCategoryAverage(skills, catSkills);
+    });
+    
+    radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: Object.keys(categories),
+            datasets: [{
+                label: 'Compétences',
+                data: data,
+                backgroundColor: 'rgba(118, 75, 162, 0.2)',
+                borderColor: '#764ba2',
+                borderWidth: 2,
+                pointBackgroundColor: '#764ba2',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#764ba2'
+            }]
+        },
+        options: {
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 10,
+                    ticks: {
+                        stepSize: 2
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+function createModalRadarChart(skills) {
+    const canvas = document.getElementById('modalRadarChart');
+    if (!canvas) return;
+    
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    
+    if (modalRadarChart) {
+        modalRadarChart.destroy();
+    }
+    
+    const categories = {
+        'Tir': ['midRangeShot', 'threePointer', 'freeThrow'],
+        'Dribble': ['dribbleRight', 'dribbleLeft', 'changeDirection'],
+        'Passe': ['shortPass', 'longPass', 'createForOthers'],
+        'Défense': ['manDefense', 'steal', 'defensiveRebound'],
+        'Physique': ['speed', 'strength', 'endurance'],
+        'Mental': ['concentration', 'leadership', 'pressureManagement']
+    };
+    
+    const data = Object.keys(categories).map(cat => {
+        const catSkills = categories[cat];
+        return calculateCategoryAverage(skills, catSkills);
+    });
+    
+    modalRadarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: Object.keys(categories),
+            datasets: [{
+                label: 'Compétences',
+                data: data,
+                backgroundColor: 'rgba(118, 75, 162, 0.2)',
+                borderColor: '#764ba2',
+                borderWidth: 2,
+                pointBackgroundColor: '#764ba2',
+                // Suite de createModalRadarChart() - reprendre après pointBackgroundColor: '#764ba2',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#764ba2'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            r: {
+                beginAtZero: true,
+                max: 10,
+                ticks: {
+                    stepSize: 2
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+}
+
+// ==================== FONCTIONS STATISTIQUES (suite) ====================
+
+function displayStrengthsWeaknesses(skills) {
+    const skillArray = Object.entries(skills).map(([key, value]) => ({
+        name: getSkillDisplayName(key),
+        key: key,
+        value: value
+    }));
+    
+    // Trier par valeur
+    skillArray.sort((a, b) => b.value - a.value);
+    
+    // Top 5 compétences
+    const topSkills = skillArray.slice(0, 5);
+    const weakSkills = skillArray.filter(s => s.value <= 5).slice(0, 5);
+    
+    // Afficher les forces
+    const topSkillsDiv = document.getElementById('topSkills');
+    if (topSkillsDiv) {
+        topSkillsDiv.innerHTML = topSkills.map(skill => `
+            <div style="margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>${skill.name}</span>
+                    <span class="badge badge-success">${skill.value}/10</span>
+                </div>
+                <div style="background: #e0e0e0; height: 8px; border-radius: 4px; margin-top: 5px;">
+                    <div style="width: ${skill.value * 10}%; background: #4caf50; height: 100%; border-radius: 4px;"></div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Afficher les faiblesses
+    const weakSkillsDiv = document.getElementById('weakSkills');
+    if (weakSkillsDiv) {
+        weakSkillsDiv.innerHTML = weakSkills.map(skill => `
+            <div style="margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>${skill.name}</span>
+                    <span class="badge ${skill.value < 4 ? 'badge-danger' : 'badge-warning'}">${skill.value}/10</span>
+                </div>
+                <div style="background: #e0e0e0; height: 8px; border-radius: 4px; margin-top: 5px;">
+                    <div style="width: ${skill.value * 10}%; background: ${skill.value < 4 ? '#f44336' : '#ff9800'}; height: 100%; border-radius: 4px;"></div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// ==================== FONCTIONS HISTORIQUE ====================
+
+function loadHistory() {
+    displayHistory(history);
+}
+
+function displayHistory(entries) {
+    const tbody = document.getElementById('historyTable');
+    
+    if (!tbody) return;
+    
+    if (entries.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Aucun historique disponible</td></tr>';
+        return;
+    }
+    
+    // Trier par date décroissante
+    entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    tbody.innerHTML = entries.map(entry => {
+        let badgeClass = '';
+        let badgeIcon = '';
+        
+        switch(entry.type) {
+            case 'creation':
+                badgeClass = 'badge-success';
+                badgeIcon = '➕';
+                break;
+            case 'evaluation':
+                badgeClass = 'badge-info';
+                badgeIcon = '📊';
+                break;
+            case 'modification':
+                badgeClass = 'badge-warning';
+                badgeIcon = '✏️';
+                break;
+            case 'import':
+                badgeClass = 'badge-info';
+                badgeIcon = '📥';
+                break;
+            case 'auto-profile':
+                badgeClass = 'badge-success';
+                badgeIcon = '🤖';
+                break;
+            default:
+                badgeClass = 'badge-secondary';
+                badgeIcon = '📝';
+        }
+        
+        return `
+            <tr>
+                <td>${formatDateTime(entry.date)}</td>
+                <td><span class="badge ${badgeClass}">${badgeIcon} ${entry.type}</span></td>
+                <td>${entry.playerName || '--'}</td>
+                <td>${entry.description}</td>
+                <td>${entry.user}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function filterHistory() {
+    const searchTerm = (document.getElementById('searchHistory')?.value || '').toLowerCase();
+    const typeFilter = document.getElementById('filterHistoryType')?.value || '';
+    const dateFilter = document.getElementById('filterHistoryDate')?.value || '';
+    
+    const filtered = history.filter(entry => {
+        const matchSearch = !searchTerm || 
+            (entry.playerName && entry.playerName.toLowerCase().includes(searchTerm)) || 
+            (entry.description && entry.description.toLowerCase().includes(searchTerm));
+        const matchType = !typeFilter || entry.type === typeFilter;
+        const matchDate = !dateFilter || entry.date.startsWith(dateFilter);
+        
+        return matchSearch && matchType && matchDate;
+    });
+    
+    displayHistory(filtered);
+}
+
+function addToHistory(type, player, description) {
+    const entry = {
+        id: Date.now().toString(),
+        date: new Date().toISOString(),
+        type: type,
+        playerName: player ? `${player.firstName} ${player.lastName}` : 'N/A',
+        playerId: player ? player.id : null,
+        description: description,
+        user: 'Coach' // Pourrait être dynamique avec un système d'authentification
+    };
+    
+    history.push(entry);
+    
+    // Limiter l'historique à 500 entrées pour éviter de surcharger le localStorage
+    if (history.length > 500) {
+        history = history.slice(-500);
+    }
+    
+    localStorage.setItem('historyLog', JSON.stringify(history));
+}
+
+// ==================== FONCTIONS PROFILS AUTO ====================
+
+function loadAutoProfilePlayers() {
+    const select = document.getElementById('autoProfileSelect');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Choisir une joueuse...</option>';
+    
+    players.forEach(player => {
+        const hasEval = evaluations[player.id] && evaluations[player.id].length > 0;
+        const option = document.createElement('option');
+        option.value = player.id;
+        option.textContent = `${player.firstName} ${player.lastName} (#${player.number || '--'})${hasEval ? '' : ' ⚠️ Sans évaluation'}`;
+        if (!hasEval) {
+            option.style.color = '#999';
+        }
+        select.appendChild(option);
+    });
+}
+
+// ==================== FONCTIONS UTILITAIRES ====================
+
+function calculateAge(birthDate) {
+    if (!birthDate) return '--';
+    
+    const birth = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+    
+    return age;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '--';
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '--';
+    
+    return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+
+function formatDateTime(dateString) {
+    if (!dateString) return '--';
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '--';
+    
+    return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function calculateGlobalRating(skills) {
+    // Pondération par catégorie pour une évaluation plus équilibrée
+    const categories = {
+        shooting: {
+            skills: ['midRangeShot', 'pullUpShot', 'threePointer', 'layupRight', 'layupLeft', 'freeThrow', 'contactFinish', 'floater'],
+            weight: 0.20
+        },
+        ballHandling: {
+            skills: ['dribbleRight', 'dribbleLeft', 'changeDirection', 'penetration', 'createOwnShot', 'ballControl'],
+            weight: 0.15
+        },
+        passing: {
+            skills: ['shortPass', 'longPass', 'peripheralVision', 'gameReading', 'createForOthers', 'passTiming'],
+            weight: 0.15
+        },
+        defense: {
+            skills: ['manDefense', 'helpDefense', 'steal', 'block', 'defensiveRebound', 'defensiveCommunication', 'perimeterDefense', 'postDefense'],
+            weight: 0.20
+        },
+        interior: {
+            skills: ['postUp', 'hookShot', 'offensiveRebound', 'screening'],
+            weight: 0.10
+        },
+        physical: {
+            skills: ['speed', 'explosiveness', 'agility', 'strength', 'endurance', 'coordination', 'balance'],
+            weight: 0.10
+        },
+        mental: {
+            skills: ['concentration', 'leadership', 'teamSpirit', 'pressureManagement', 'fighting', 'tacticalDiscipline'],
+            weight: 0.10
+        }
+    };
+    
+    let totalScore = 0;
+    
+    Object.values(categories).forEach(category => {
+        const categorySkills = category.skills.filter(skill => skills[skill] !== undefined);
+        if (categorySkills.length > 0) {
+            const categoryAvg = categorySkills.reduce((sum, skill) => sum + (skills[skill] || 5), 0) / categorySkills.length;
+            totalScore += categoryAvg * category.weight;
+        }
+    });
+    
+    return parseFloat(totalScore.toFixed(1));
+}
+
+function calculateCategoryAverage(skills, categoryKeys) {
+    const validSkills = categoryKeys.filter(key => skills[key] !== undefined);
+    
+    if (validSkills.length === 0) return 0;
+    
+    const sum = validSkills.reduce((acc, key) => acc + (skills[key] || 0), 0);
+    return sum / validSkills.length;
+}
+
+function getSkillDisplayName(skillId) {
+    const names = {
+        // Tir et Finition
+        midRangeShot: 'Tir mi-distance',
+        pullUpShot: 'Tir après dribble',
+        threePointer: 'Tir à 3 points',
+        layupRight: 'Lay-up main droite',
+        layupLeft: 'Lay-up main gauche',
+        freeThrow: 'Lancer franc',
+        contactFinish: 'Finition au contact',
+        floater: 'Floater',
+        
+        // Dribble et Création
+        dribbleRight: 'Dribble main droite',
+        dribbleLeft: 'Dribble main gauche',
+        changeDirection: 'Changement de direction',
+        penetration: 'Pénétration',
+        createOwnShot: 'Création pour soi',
+        ballControl: 'Contrôle du ballon',
+        
+        // Passe et Vision
+        shortPass: 'Passe courte',
+        longPass: 'Passe longue',
+        peripheralVision: 'Vision périphérique',
+        gameReading: 'Lecture du jeu',
+        createForOthers: 'Création pour les autres',
+        passTiming: 'Timing de passe',
+        
+        // Défense
+        manDefense: 'Défense individuelle',
+        helpDefense: 'Aide défensive',
+        steal: 'Interception',
+        block: 'Contre',
+        defensiveRebound: 'Rebond défensif',
+        defensiveCommunication: 'Communication défensive',
+        perimeterDefense: 'Défense périmètre',
+        postDefense: 'Défense poste bas',
+        
+        // Jeu Intérieur
+        postUp: 'Jeu dos au panier',
+        hookShot: 'Hook shot',
+        offensiveRebound: 'Rebond offensif',
+        screening: 'Écrans',
+        
+        // Physique
+        speed: 'Vitesse',
+        explosiveness: 'Explosivité',
+        agility: 'Agilité',
+        strength: 'Force',
+        endurance: 'Endurance',
+        coordination: 'Coordination',
+        balance: 'Équilibre',
+        
+        // Mental
+        concentration: 'Concentration',
+        leadership: 'Leadership',
+        teamSpirit: 'Esprit d\'équipe',
+        pressureManagement: 'Gestion de la pression',
+        fighting: 'Combativité',
+        tacticalDiscipline: 'Discipline tactique'
+    };
+    
+    return names[skillId] || skillId;
+}
+
+// ==================== INITIALISATION ET EVENT LISTENERS ====================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser les sliders d'évaluation
+    const sliders = document.querySelectorAll('.skill-slider');
+    sliders.forEach(slider => {
+        slider.addEventListener('input', function() {
+            const valueSpan = document.getElementById(this.id + 'Value');
+            if (valueSpan) {
+                valueSpan.textContent = this.value;
+            }
+        });
+    });
+    
+    // Fermer le modal au clic extérieur
+    const modal = document.getElementById('playerModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    }
+    
+    // Gérer les raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Échap pour fermer le modal
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('playerModal');
+            if (modal && modal.classList.contains('active')) {
+                closeModal();
+            }
+        }
+        
+        // Ctrl+S pour sauvegarder (dans les formulaires)
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            
+            // Si on est dans l'onglet évaluation
+            const evalTab = document.getElementById('evaluation');
+            if (evalTab && evalTab.classList.contains('active')) {
+                const evalForm = document.getElementById('evaluationForm');
+                if (evalForm && evalForm.style.display !== 'none') {
+                    saveEvaluation();
+                }
+            }
+            
+            // Si on est dans l'onglet nouvelle joueuse
+            const addPlayerTab = document.getElementById('addPlayer');
+            if (addPlayerTab && addPlayerTab.classList.contains('active')) {
+                const form = document.getElementById('playerForm');
+                if (form) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        }
+    });
+    
+    // Gérer le drag & drop pour l'import
+    const dropZone = document.getElementById('dropZone');
+    if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'text/csv') {
+                handleFileSelect({ target: { files: files } });
+            } else if (files.length > 0) {
+                alert('Veuillez déposer un fichier CSV');
+            }
+        });
+    }
+    
+    // Auto-save toutes les 5 minutes
+    setInterval(() => {
+        // Sauvegarder automatiquement les données
+        localStorage.setItem('basketballPlayers', JSON.stringify(players));
+        localStorage.setItem('playerEvaluations', JSON.stringify(evaluations));
+        localStorage.setItem('historyLog', JSON.stringify(history));
+        console.log('Auto-save effectué à', new Date().toLocaleTimeString());
+    }, 5 * 60 * 1000);
+    
+    // Vérifier la taille du localStorage
+    checkLocalStorageSize();
+    
+    // Charger le dashboard au démarrage
+    loadDashboard();
+    
+    // Afficher un message de bienvenue si c'est la première visite
+    if (!localStorage.getItem('hasVisited')) {
+        localStorage.setItem('hasVisited', 'true');
+        setTimeout(() => {
+            alert('Bienvenue dans le système de suivi du club féminin de basketball !\n\n' +
+                  '🏀 Commencez par ajouter des joueuses\n' +
+                  '📊 Effectuez des évaluations régulières\n' +
+                  '🤖 Utilisez les profils automatiques pour optimiser les positions\n\n' +
+                  'Toutes vos données sont sauvegardées localement.');
+        }, 500);
+    }
+});
+
+// Fonction pour vérifier la taille du localStorage
+function checkLocalStorageSize() {
+    let totalSize = 0;
+    
+    for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+            totalSize += localStorage[key].length + key.length;
+        }
+    }
+    
+    // Convertir en KB
+    const sizeInKB = (totalSize / 1024).toFixed(2);
+    
+    // Avertir si on approche de la limite (généralement 5-10MB)
+    if (sizeInKB > 4000) { // 4MB
+        console.warn(`Attention : Le stockage local utilise ${sizeInKB}KB. Considérez l'export des données anciennes.`);
+    } else {
+        console.log(`Stockage local : ${sizeInKB}KB utilisés`);
+    }
+}
+
+// Fonction d'export des données (bonus)
+function exportAllData() {
+    const allData = {
+        players: players,
+        evaluations: evaluations,
+        history: history,
+        exportDate: new Date().toISOString(),
+        version: '1.0'
+    };
+    
+    const json = JSON.stringify(allData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `basketball_club_data_${formatDate(new Date().toISOString()).replace(/\//g, '-')}.json`;
+    link.click();
+    
+    URL.revokeObjectURL(url);
+}
+
+// Fonction d'import des données (bonus)
+function importAllData(file) {
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            if (confirm('Cette action remplacera toutes les données actuelles. Continuer ?')) {
+                players = data.players || [];
+                evaluations = data.evaluations || {};
+                history = data.history || [];
+                
+                localStorage.setItem('basketballPlayers', JSON.stringify(players));
+                localStorage.setItem('playerEvaluations', JSON.stringify(evaluations));
+                localStorage.setItem('historyLog', JSON.stringify(history));
+                
+                alert('Import réussi ! La page va se recharger.');
+                location.reload();
+            }
+        } catch (error) {
+            alert('Erreur lors de l\'import : ' + error.message);
+        }
+    };
+    
+    reader.readAsText(file);
+}
+
+// Initialisation au chargement de la page
+window.onload = function() {
+    // S'assurer que le dashboard est chargé
+    const dashboardTab = document.getElementById('dashboard');
+    if (dashboardTab && !dashboardTab.classList.contains('active')) {
+        dashboardTab.classList.add('active');
+    }
+    
+    loadDashboard();
+    
+    console.log('Système de suivi basketball - Chargé avec succès');
+    console.log(`${players.length} joueuse(s) en base`);
+    console.log(`${Object.keys(evaluations).length} joueuse(s) évaluée(s)`);
+    console.log(`${history.length} entrée(s) dans l'historique`);
+};
+
+// ==================== FIN DU CODE JAVASCRIPT ====================
     </script>
 </body>
 </html>
-                

@@ -1352,50 +1352,7 @@ Prénom    Nom    Date naissance    Numéro    Catégorie    Équipe    Taille  
         let modalRadarChart = null;
         let profileRadarChart = null;
 
-        // ==================== DÉFINITION GLOBALE DES FONCTIONS CRITIQUES ====================
-// Définir switchTab globalement pour éviter les erreurs
-window.switchTab = function(tabName, buttonElement) {
-    const tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => tab.classList.remove('active'));
-    
-    const buttons = document.querySelectorAll('.tab-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    
-    const targetTab = document.getElementById(tabName);
-    if (targetTab) {
-        targetTab.classList.add('active');
-    }
-    
-    if (buttonElement) {
-        buttonElement.classList.add('active');
-    }
-    
-    // Appeler les fonctions de chargement si elles existent
-    setTimeout(() => {
-        switch(tabName) {
-            case 'dashboard':
-                if (typeof loadDashboard === 'function') loadDashboard();
-                break;
-            case 'players':
-                if (typeof loadPlayers === 'function') loadPlayers();
-                break;
-            case 'evaluation':
-                if (typeof loadEvaluationPlayers === 'function') loadEvaluationPlayers();
-                break;
-            case 'statistics':
-                if (typeof loadStatisticsPlayers === 'function') loadStatisticsPlayers();
-                break;
-            case 'history':
-                if (typeof loadHistory === 'function') loadHistory();
-                break;
-            case 'autoProfile':
-                if (typeof loadAutoProfilePlayers === 'function') loadAutoProfilePlayers();
-                break;
-        }
-    }, 10);
-};
 
-        
         // ==================== SYSTÈME D'IMPORT EN MASSE ====================
 
         // ==================== CORRECTIONS DES ERREURS ====================
@@ -1564,31 +1521,12 @@ window.switchTab = function(tabName, buttonElement) {
             displayImportPreview();
         }
 
-        function displayImportPreview() {
-            const previewSection = document.getElementById('importPreview');
-            const tbody = document.getElementById('previewBody');
-            const summary = document.getElementById('importSummary');
-            
-            const validCount = importData.filter(p => p.status === 'valid').length;
-            const invalidCount = importData.filter(p => p.status === 'invalid').length;
-            
-            summary.innerHTML = `
-                <strong>${importData.length}</strong> joueuses détectées 
-                (<span style="color: #4caf50;">${validCount} valides</span>, 
-                <span style="color: #f44336;">${invalidCount} invalides</span>)
-            `;
-            
-            tbody.innerHTML = importData.map((player, index) => `
-                <tr style="${player.status === 'invalid' ? 'background: #ffebee;' : ''}">
-                    <td>
-                        <input type="checkbox" 
-                               id="import_${index}" 
-                               ${player.status === 'valid'
-                                 // Suite de displayImportPreview()
-function displayImportPreview() {
+       function displayImportPreview() {
     const previewSection = document.getElementById('importPreview');
     const tbody = document.getElementById('previewBody');
     const summary = document.getElementById('importSummary');
+    
+    if (!previewSection || !tbody || !summary) return;
     
     const validCount = importData.filter(p => p.status === 'valid').length;
     const invalidCount = importData.filter(p => p.status === 'invalid').length;
@@ -2309,39 +2247,6 @@ function applyAutoProfile() {
           `Profil offensif: ${player.offensiveProfile}\n` +
           `Profil défensif: ${player.defensiveProfile}`);
 }
-
-function analyzeAllPlayers() {
-    const results = document.getElementById('batchAnalysisResults');
-    let analyzedCount = 0;
-    let updatedPlayers = [];
-    
-    players.forEach(player => {
-        const playerEvals = evaluations[player.id];
-        
-        if (playerEvals && playerEvals.length > 0) {
-            const lastEval = playerEvals[playerEvals.length - 1];
-            const analysis = performProfileAnalysis(player, lastEval.skills);
-            
-            // Appliquer automatiquement les profils
-            player.primaryPosition = analysis.position.primary.name;
-            if (analysis.position.secondary && analysis.position.secondary.score > 60) {
-                player.secondaryPosition = analysis.position.secondary.name;
-            }
-            player.offensiveProfile = analysis.offensiveProfile.type;
-            player.defensiveProfile = analysis.defensiveProfile.type;
-            player.characteristics = analysis.characteristics;
-            
-            analyzedCount++;
-            updatedPlayers.push({
-                name: `${player.firstName} ${player.lastName}`,
-                position: analysis.position.primary.name,
-                offensive: analysis.offensiveProfile.type,
-                defensive: analysis.defensiveProfile.type
-            });
-        }
-    });
-    
-    if// Suite de analyzeAllPlayers() - reprendre depuis le if incomplet
 function analyzeAllPlayers() {
     const results = document.getElementById('batchAnalysisResults');
     let analyzedCount = 0;

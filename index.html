@@ -1109,9 +1109,10 @@ Prénom    Nom    Date naissance    Numéro    Catégorie    Équipe    Taille  
                                 <input type="range" class="skill-slider" min="1" max="10" value="5" id="strength">
                                 <span class="skill-value" id="strengthValue">5</span>
                             </div>
-                            <div class="skill-item">
+                           <div class="skill-item">
                                 <span class="skill-name">Endurance</span>
-                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="enduranceValue">5</span>
+                                <input type="range" class="skill-slider" min="1" max="10" value="5" id="endurance">
+                                <span class="skill-value" id="enduranceValue">5</span>
                             </div>
                             <div class="skill-item">
                                 <span class="skill-name">Coordination</span>
@@ -1340,6 +1341,7 @@ Prénom    Nom    Date naissance    Numéro    Catégorie    Équipe    Taille  
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        
         // ==================== DONNÉES ET VARIABLES GLOBALES ====================
         let players = JSON.parse(localStorage.getItem('basketballPlayers')) || [];
         let evaluations = JSON.parse(localStorage.getItem('playerEvaluations')) || {};
@@ -1350,7 +1352,108 @@ Prénom    Nom    Date naissance    Numéro    Catégorie    Équipe    Taille  
         let modalRadarChart = null;
         let profileRadarChart = null;
 
+        // ==================== DÉFINITION GLOBALE DES FONCTIONS CRITIQUES ====================
+// Définir switchTab globalement pour éviter les erreurs
+window.switchTab = function(tabName, buttonElement) {
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    const targetTab = document.getElementById(tabName);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+    
+    if (buttonElement) {
+        buttonElement.classList.add('active');
+    }
+    
+    // Appeler les fonctions de chargement si elles existent
+    setTimeout(() => {
+        switch(tabName) {
+            case 'dashboard':
+                if (typeof loadDashboard === 'function') loadDashboard();
+                break;
+            case 'players':
+                if (typeof loadPlayers === 'function') loadPlayers();
+                break;
+            case 'evaluation':
+                if (typeof loadEvaluationPlayers === 'function') loadEvaluationPlayers();
+                break;
+            case 'statistics':
+                if (typeof loadStatisticsPlayers === 'function') loadStatisticsPlayers();
+                break;
+            case 'history':
+                if (typeof loadHistory === 'function') loadHistory();
+                break;
+            case 'autoProfile':
+                if (typeof loadAutoProfilePlayers === 'function') loadAutoProfilePlayers();
+                break;
+        }
+    }, 10);
+};
+
+        
         // ==================== SYSTÈME D'IMPORT EN MASSE ====================
+
+        // ==================== CORRECTIONS DES ERREURS ====================
+
+        // S'assurer que switchTab est définie globalement AVANT son utilisation
+        window.switchTab = function(tabName, buttonElement) {
+            // Masquer tous les contenus d'onglets
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Désactiver tous les boutons d'onglets
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Afficher l'onglet sélectionné
+            const targetTab = document.getElementById(tabName);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            
+            // Activer le bouton correspondant
+            if (buttonElement) {
+                buttonElement.classList.add('active');
+            }
+            
+            // Charger les données spécifiques à l'onglet
+            switch(tabName) {
+                case 'dashboard':
+                    if (typeof loadDashboard === 'function') loadDashboard();
+                    break;
+                case 'players':
+                    if (typeof loadPlayers === 'function') loadPlayers();
+                    break;
+                case 'evaluation':
+                    if (typeof loadEvaluationPlayers === 'function') loadEvaluationPlayers();
+                    break;
+                case 'statistics':
+                    if (typeof loadStatisticsPlayers === 'function') loadStatisticsPlayers();
+                    break;
+                case 'history':
+                    if (typeof loadHistory === 'function') loadHistory();
+                    break;
+                case 'autoProfile':
+                    if (typeof loadAutoProfilePlayers === 'function') loadAutoProfilePlayers();
+                    break;
+                case 'importPlayers':
+                    // Pas de fonction de chargement spécifique
+                    break;
+                case 'addPlayer':
+                    // Pas de fonction de chargement spécifique
+                    break;
+            }
+        };
+        
+        // Définir également la fonction switchTab normalement pour les appels internes
+        function switchTab(tabName, buttonElement) {
+            window.switchTab(tabName, buttonElement);
+        }
         
         // Gérer le drag & drop
         const dropZone = document.getElementById('dropZone');
@@ -3326,111 +3429,36 @@ function getSkillDisplayName(skillId) {
 // ==================== INITIALISATION ET EVENT LISTENERS ====================
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialiser les sliders d'évaluation
-    const sliders = document.querySelectorAll('.skill-slider');
-    sliders.forEach(slider => {
-        slider.addEventListener('input', function() {
-            const valueSpan = document.getElementById(this.id + 'Value');
-            if (valueSpan) {
-                valueSpan.textContent = this.value;
-            }
+    // Protection contre les erreurs de chargement
+    try {
+        // Initialiser les sliders d'évaluation
+        const sliders = document.querySelectorAll('.skill-slider');
+        sliders.forEach(slider => {
+            slider.addEventListener('input', function() {
+                const valueSpan = document.getElementById(this.id + 'Value');
+                if (valueSpan) {
+                    valueSpan.textContent = this.value;
+                }
+            });
         });
-    });
-    
-    // Fermer le modal au clic extérieur
-    const modal = document.getElementById('playerModal');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
-    }
-    
-    // Gérer les raccourcis clavier
-    document.addEventListener('keydown', function(e) {
-        // Échap pour fermer le modal
-        if (e.key === 'Escape') {
-            const modal = document.getElementById('playerModal');
-            if (modal && modal.classList.contains('active')) {
-                closeModal();
-            }
+        
+        // Fermer le modal au clic extérieur
+        const modal = document.getElementById('playerModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
         }
         
-        // Ctrl+S pour sauvegarder (dans les formulaires)
-        if (e.ctrlKey && e.key === 's') {
-            e.preventDefault();
-            
-            // Si on est dans l'onglet évaluation
-            const evalTab = document.getElementById('evaluation');
-            if (evalTab && evalTab.classList.contains('active')) {
-                const evalForm = document.getElementById('evaluationForm');
-                if (evalForm && evalForm.style.display !== 'none') {
-                    saveEvaluation();
-                }
-            }
-            
-            // Si on est dans l'onglet nouvelle joueuse
-            const addPlayerTab = document.getElementById('addPlayer');
-            if (addPlayerTab && addPlayerTab.classList.contains('active')) {
-                const form = document.getElementById('playerForm');
-                if (form) {
-                    form.dispatchEvent(new Event('submit'));
-                }
-            }
+        // Charger le dashboard au démarrage si la fonction existe
+        if (typeof loadDashboard === 'function') {
+            loadDashboard();
         }
-    });
-    
-    // Gérer le drag & drop pour l'import
-    const dropZone = document.getElementById('dropZone');
-    if (dropZone) {
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
         
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-        
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0 && files[0].type === 'text/csv') {
-                handleFileSelect({ target: { files: files } });
-            } else if (files.length > 0) {
-                alert('Veuillez déposer un fichier CSV');
-            }
-        });
-    }
-    
-    // Auto-save toutes les 5 minutes
-    setInterval(() => {
-        // Sauvegarder automatiquement les données
-        localStorage.setItem('basketballPlayers', JSON.stringify(players));
-        localStorage.setItem('playerEvaluations', JSON.stringify(evaluations));
-        localStorage.setItem('historyLog', JSON.stringify(history));
-        console.log('Auto-save effectué à', new Date().toLocaleTimeString());
-    }, 5 * 60 * 1000);
-    
-    // Vérifier la taille du localStorage
-    checkLocalStorageSize();
-    
-    // Charger le dashboard au démarrage
-    loadDashboard();
-    
-    // Afficher un message de bienvenue si c'est la première visite
-    if (!localStorage.getItem('hasVisited')) {
-        localStorage.setItem('hasVisited', 'true');
-        setTimeout(() => {
-            alert('Bienvenue dans le système de suivi du club féminin de basketball !\n\n' +
-                  '🏀 Commencez par ajouter des joueuses\n' +
-                  '📊 Effectuez des évaluations régulières\n' +
-                  '🤖 Utilisez les profils automatiques pour optimiser les positions\n\n' +
-                  'Toutes vos données sont sauvegardées localement.');
-        }, 500);
+    } catch (error) {
+        console.error('Erreur lors de l\'initialisation:', error);
     }
 });
 

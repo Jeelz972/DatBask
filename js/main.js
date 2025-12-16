@@ -1,25 +1,24 @@
+// js/main.js
 import { categoryNames, evaluationSchema } from './config.js';
 import { storage } from './storage.js';
 import { playerManager } from './playerManager.js';
 
-const { createApp } = Vue; // Vue est chargé via le CDN dans index.html
+const { createApp } = Vue;
 
 createApp({
     data() {
         return {
-            currentView: 'list', // list, playerForm, playerDetail, evaluate
+            currentView: 'list',
+            isLoading: false, // Pour afficher un chargement
             players: [],
             evaluations: [],
             
-            // Filtres
             filters: { search: '', category: '' },
             
-            // Objets en cours
             formPlayer: playerManager.createEmpty(),
             currentPlayer: null,
             currentEval: null,
             
-            // Config importée
             schema: evaluationSchema,
             catNames: categoryNames,
             chartInstance: null
@@ -28,6 +27,8 @@ createApp({
     computed: {
         filteredPlayers() {
             return this.players.filter(p => {
+                // Vérification de sécurité si les données ne sont pas encore chargées
+                if(!p) return false; 
                 const matchName = (p.firstName + ' ' + p.lastName).toLowerCase().includes(this.filters.search.toLowerCase());
                 const matchCat = this.filters.category ? p.category === this.filters.category : true;
                 return matchName && matchCat;
@@ -36,7 +37,7 @@ createApp({
         playerEvaluations() {
             if (!this.currentPlayer) return [];
             return this.evaluations
-                .filter(e => e.playerId === this.currentPlayer.id)
+                .filter(e => e.playerId === this.currentPlayer.id) // Note: on compare avec l'ID interne
                 .sort((a, b) => new Date(b.date) - new Date(a.date));
         },
         liveScore() {
@@ -51,15 +52,26 @@ createApp({
             return count === 0 ? 0 : (total / count).toFixed(1);
         }
     },
-    mounted() {
-        // Chargement initial des données
-        this.players = storage.getPlayers();
-        this.evaluations = storage.getEvaluations();
+    // Le mounted devient ASYNC pour charger les données
+    async mounted() {
+        this.isLoading = true;
+        try {
+            // On charge les deux collections en parallèle
+            const [playersData, evalsData] = await Promise.all([
+                storage.getPlayers(),
+                storage.getEvaluations()
+            ]);
+            this.players = playersData;
+            this.evaluations = evalsData;
+        } catch (error) {
+            console.error("Erreur chargement Firebase:", error);
+            alert("Erreur de connexion à la base de données");
+        } finally {
+            this.isLoading = false;
+        }
     },
     methods: {
-        changeView(view) {
-            this.currentView = view;
-        },
+        changeView(view) { this.currentView = view; },
         getScoreColor: playerManager.getScoreColor,
         
         // --- GESTION JOUEUR ---
@@ -67,16 +79,35 @@ createApp({
             this.formPlayer = playerManager.createEmpty();
             this.currentView = 'playerForm';
         },
-        savePlayerForm() {
-            if (!this.formPlayer.id) {
-                this.formPlayer.id = crypto.randomUUID();
-                this.players.push({...this.formPlayer});
-            } else {
-                // Logique de modification (non implémentée ici pour simplifier, on ajoute juste)
+        
+        async savePlayerForm() {
+            this.isLoading = true;
+            try {
+                // On utilise l'ID généré localement pour lier (id) mais Firebase gérera le sien (firestoreId)
+                if (!this.formPlayer.id) {
+                    this.formPlayer.id = crypto.randomUUID(); 
+                }
+                
+                // Sauvegarde Cloud
+                const savedPlayer = await storage.savePlayer(this.formPlayer);
+                
+                // Mise à jour locale (sans recharger toute la page)
+                const index = this.players.findIndex(p => p.id === savedPlayer.id);
+                if (index !== -1) {
+                    this.players[index] = savedPlayer;
+                } else {
+                    this.players.push(savedPlayer);
+                }
+                
+                this.currentView = 'list';
+            } catch (e) {
+                console.error(e);
+                alert("Erreur lors de la sauvegarde du joueur");
+            } finally {
+                this.isLoading = false;
             }
-            storage.savePlayers(this.players);
-            this.currentView = 'list';
         },
+        
         selectPlayer(player) {
             this.currentPlayer = player;
             this.currentView = 'playerDetail';
@@ -86,45 +117,54 @@ createApp({
         // --- GESTION EVALUATION ---
         startEvaluation() {
             this.currentEval = {
-                id: crypto.randomUUID(),
-                playerId: this.currentPlayer.id,
-                date: new Date().toLocaleDateString('fr-FR'),
-                ratings: {}
+                // Pas d'ID Firestore ici, il sera créé à la sauvegarde
+                playerId: this.currentPlayer.id, // Lien avec le joueur
+                date: new Date().toISOString().split('T')[0],
+                ratings: {},
+                evaluator: 'Coach' // Tu pourras rendre ça dynamique plus tard
             };
-            // Initialisation des notes à 5
             for (const cat in this.schema) {
                 this.currentEval.ratings[cat] = {};
                 this.schema[cat].forEach(c => this.currentEval.ratings[cat][c.key] = 5);
             }
             this.currentView = 'evaluate';
         },
-        submitEval() {
-            this.currentEval.overallScore = this.liveScore;
-            
-            // Calculer moyennes pour le chart (simplifié)
-            const avgs = {};
-            for(const cat in this.currentEval.ratings) {
-                let sum = 0, c = 0;
-                Object.values(this.currentEval.ratings[cat]).forEach(v => { sum += v; c++; });
-                avgs[cat] = sum/c;
-            }
-            this.currentEval.averages = avgs;
+        
+        async submitEval() {
+            this.isLoading = true;
+            try {
+                // 1. Calculs
+                this.currentEval.overallScore = this.liveScore;
+                const avgs = {};
+                for(const cat in this.currentEval.ratings) {
+                    let sum = 0, c = 0;
+                    Object.values(this.currentEval.ratings[cat]).forEach(v => { sum += v; c++; });
+                    avgs[cat] = (sum/c).toFixed(1);
+                }
+                this.currentEval.averages = avgs;
 
-            // Sauvegarde
-            this.evaluations.push({...this.currentEval});
-            storage.saveEvaluations(this.evaluations);
+                // 2. Sauvegarde Cloud de l'évaluation
+                const savedEval = await storage.saveEvaluation(this.currentEval);
+                this.evaluations.unshift(savedEval); // Ajout en haut de liste locale
 
-            // Mise à jour badge joueur
-            const pIdx = this.players.findIndex(p => p.id === this.currentPlayer.id);
-            if(pIdx !== -1) {
-                this.players[pIdx].lastRating = this.currentEval.overallScore;
-                storage.savePlayers(this.players);
+                // 3. Mise à jour de la note du joueur (Cloud + Local)
+                const pIdx = this.players.findIndex(p => p.id === this.currentPlayer.id);
+                if(pIdx !== -1) {
+                    this.players[pIdx].lastRating = this.currentEval.overallScore;
+                    // On sauvegarde juste le joueur mis à jour
+                    await storage.savePlayer(this.players[pIdx]);
+                }
+
+                this.selectPlayer(this.players[pIdx]); // Retour fiche
+            } catch (e) {
+                console.error(e);
+                alert("Erreur lors de la sauvegarde de l'évaluation");
+            } finally {
+                this.isLoading = false;
             }
-            
-            this.selectPlayer(this.players[pIdx]); // Retour fiche
         },
 
-        // --- CHART JS ---
+        // --- CHART JS (Inchangé) ---
         renderChart() {
             const ctx = document.getElementById('radarChart');
             if (!ctx || !this.playerEvaluations.length) return;

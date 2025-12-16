@@ -222,5 +222,4 @@ renderChart() {
                     }
                 }
             });
-        }
-}).mount('#app');
+        };

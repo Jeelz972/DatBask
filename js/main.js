@@ -5,7 +5,8 @@ import { playerManager } from './playerManager.js';
 
 const { createApp } = Vue;
 
-createApp({
+// On stocke l'application dans une constante pour éviter l'erreur de syntaxe
+const app = createApp({
     data() {
         return {
             currentView: 'list',
@@ -120,7 +121,7 @@ createApp({
                 ratings: {},
                 evaluator: 'Coach' 
             };
-            // Initialisation des notes à 5 selon le schema config.js
+            // Initialisation des notes à 5
             for (const cat in this.schema) {
                 this.currentEval.ratings[cat] = {};
                 this.schema[cat].forEach(c => this.currentEval.ratings[cat][c.key] = 5);
@@ -133,7 +134,6 @@ createApp({
             try {
                 this.currentEval.overallScore = this.liveScore;
                 
-                // Calcul des moyennes par catégorie
                 const avgs = {};
                 for(const cat in this.currentEval.ratings) {
                     let sum = 0, c = 0;
@@ -160,14 +160,14 @@ createApp({
             }
         },
 
-        // --- CHART JS (Mise à jour pour les 4 Piliers) ---
+        // --- CHART JS ---
         renderChart() {
             const ctx = document.getElementById('radarChart');
             if (!ctx || !this.playerEvaluations.length) return;
 
             const lastEval = this.playerEvaluations[0];
 
-            // Mapping des 4 axes (Mental, Physique, Technique, Tactique)
+            // 4 Axes
             const data = [
                 lastEval.averages.mental || 0,
                 lastEval.averages.physical || 0,
@@ -205,7 +205,8 @@ createApp({
                 }
             });
         }
-    } // Fin de methods
-}); // Fin de createApp({})
-// .mount('#app') est appelé ici :
-.mount('#app');
+    }
+});
+
+// C'est ici que l'erreur se produisait. Maintenant c'est propre :
+app.mount('#app');

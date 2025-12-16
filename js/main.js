@@ -165,18 +165,20 @@ createApp({
         },
 
         // --- CHART JS (Inchangé) ---
-        renderChart() {
+renderChart() {
             const ctx = document.getElementById('radarChart');
+            // Vérification de sécurité
             if (!ctx || !this.playerEvaluations.length) return;
 
             const lastEval = this.playerEvaluations[0];
+
+            // On mappe les nouvelles données (4 axes)
+            // On utilise || 0 pour éviter les bugs si une note manque
             const data = [
-                lastEval.averages.mental,
-                lastEval.averages.physical,
-                lastEval.averages.defense,
-                lastEval.averages.shooting,
-                lastEval.averages.dribbling,
-                lastEval.averages.passing
+                lastEval.averages.mental || 0,
+                lastEval.averages.physical || 0,
+                lastEval.averages.technical || 0,
+                lastEval.averages.tactical || 0
             ];
 
             if (this.chartInstance) this.chartInstance.destroy();
@@ -184,19 +186,41 @@ createApp({
             this.chartInstance = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['Mental', 'Physique', 'Défense', 'Tir', 'Dribble', 'Passe'],
+                    // Les 4 axes du graphique
+                    labels: ['🧠 Mental', '⚡ Physique', '🏀 Technique', '♟️ Tactique'],
                     datasets: [{
                         label: 'Niveau Actuel',
                         data: data,
-                        backgroundColor: 'rgba(234, 88, 12, 0.2)',
+                        // Couleur Orange plus professionnelle
+                        backgroundColor: 'rgba(234, 88, 12, 0.4)', 
                         borderColor: '#ea580c',
-                        pointBackgroundColor: '#ea580c'
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#ea580c',
+                        pointHoverBackgroundColor: '#ea580c',
+                        borderWidth: 2
                     }]
                 },
                 options: {
-                    scales: { r: { min: 0, max: 10 } }
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2, // Moins chargé visuellement
+                                backdropColor: 'transparent' // Plus propre
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false } // On cache la légende pour gagner de la place
+                    }
                 }
             });
         }
-    }
 }).mount('#app');

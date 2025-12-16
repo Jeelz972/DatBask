@@ -1,42 +1,39 @@
-// Configuration des catégories d'évaluation
+// js/config.js
+
 export const categoryNames = {
-    shooting: '🎯 Tir & Finition',
-    dribbling: '🏀 Dribble & Création',
-    passing: '👁️ Passe & Vision',
-    defense: '🛡️ Défense',
-    physical: '💪 Physique',
-    mental: '🧠 Mental'
+    mental: '🧠 Mental & Attitude',
+    physical: '⚡ Physique & Moteur',
+    technical: '🏀 Technique & Skills',
+    tactical: '♟️ Tactique & QI Basket'
 };
 
 export const evaluationSchema = {
-    shooting: [
-        {key: 'midRange', label: 'Tir mi-distance'}, {key: 'offDribble', label: 'Tir après dribble'},
-        {key: 'threePoint', label: 'Tir à 3 points'}, {key: 'layupRight', label: 'Lay-up Droit'},
-        {key: 'layupLeft', label: 'Lay-up Gauche'}, {key: 'freeThrow', label: 'Lancer franc'}
-    ],
-    dribbling: [
-        {key: 'rightHand', label: 'Main Droite'}, {key: 'leftHand', label: 'Main Gauche'},
-        {key: 'changeDir', label: 'Chgt Direction'}, {key: 'penetration', label: 'Pénétration'},
-        {key: 'createSelf', label: 'Création pour soi'}
-    ],
-    passing: [
-        {key: 'shortPass', label: 'Passe courte'}, {key: 'longPass', label: 'Passe longue'},
-        {key: 'vision', label: 'Vision'}, {key: 'iq', label: 'Lecture jeu'},
-        {key: 'createOthers', label: 'Création pour autres'}
-    ],
-    defense: [
-        {key: 'individual', label: 'Individuelle'}, {key: 'help', label: 'Aide'},
-        {key: 'steal', label: 'Interception'}, {key: 'block', label: 'Contre'},
-        {key: 'rebound', label: 'Rebond'}, {key: 'comm', label: 'Communication'}
+    mental: [
+        { key: 'coachability', label: 'Coachabilité & Écoute' },
+        { key: 'resilience', label: 'Gestion de l\'échec (Résilience)' },
+        { key: 'leadership', label: 'Leadership & Communication' },
+        { key: 'workEthic', label: 'Éthique de travail (Le caché)' },
+        { key: 'grinta', label: 'Compétitivité (Grinta)' }
     ],
     physical: [
-        {key: 'speed', label: 'Vitesse'}, {key: 'explosiveness', label: 'Explosivité'},
-        {key: 'agility', label: 'Agilité'}, {key: 'strength', label: 'Force'},
-        {key: 'endurance', label: 'Endurance'}, {key: 'coord', label: 'Coordination'}
+        { key: 'explosiveness', label: 'Explosivité & 1er pas' },
+        { key: 'endurance', label: 'Endurance (VMA spécifique)' },
+        { key: 'impact', label: 'Impact & Gainage' },
+        { key: 'laterality', label: 'Latéralité & Jeu de jambes' },
+        { key: 'stability', label: 'Proprioception & Prévention' }
     ],
-    mental: [
-        {key: 'focus', label: 'Concentration'}, {key: 'leadership', label: 'Leadership'},
-        {key: 'teamSpirit', label: 'Esprit équipe'}, {key: 'pressure', label: 'Gestion Pression'},
-        {key: 'fight', label: 'Combativité'}, {key: 'discipline', label: 'Discipline'}
+    technical: [
+        { key: 'shooting', label: 'Tir (Mécanique & Sélection)' },
+        { key: 'handle', label: 'Aisance balle en main' },
+        { key: 'passing', label: 'Qualité de passe' },
+        { key: 'offBall', label: 'Jeu sans ballon (Cutting)' },
+        { key: 'finishing', label: 'Finition au cercle' }
+    ],
+    tactical: [
+        { key: 'pnr', label: 'Lecture Pick & Roll' },
+        { key: 'spacing', label: 'Spacing & Occupation' },
+        { key: 'rotation', label: 'Rotations Défensives' },
+        { key: 'gameMgmt', label: 'Gestion (Temps/Score)' },
+        { key: 'readDefense', label: 'Lecture défense adverse' }
     ]
 };

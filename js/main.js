@@ -9,16 +9,19 @@ createApp({
     data() {
         return {
             currentView: 'list',
-            isLoading: false, // Pour afficher un chargement
+            isLoading: false,
             players: [],
             evaluations: [],
             
+            // Filtres
             filters: { search: '', category: '' },
             
+            // Objets en cours
             formPlayer: playerManager.createEmpty(),
             currentPlayer: null,
             currentEval: null,
             
+            // Config importée
             schema: evaluationSchema,
             catNames: categoryNames,
             chartInstance: null
@@ -27,8 +30,7 @@ createApp({
     computed: {
         filteredPlayers() {
             return this.players.filter(p => {
-                // Vérification de sécurité si les données ne sont pas encore chargées
-                if(!p) return false; 
+                if(!p) return false;
                 const matchName = (p.firstName + ' ' + p.lastName).toLowerCase().includes(this.filters.search.toLowerCase());
                 const matchCat = this.filters.category ? p.category === this.filters.category : true;
                 return matchName && matchCat;
@@ -37,7 +39,7 @@ createApp({
         playerEvaluations() {
             if (!this.currentPlayer) return [];
             return this.evaluations
-                .filter(e => e.playerId === this.currentPlayer.id) // Note: on compare avec l'ID interne
+                .filter(e => e.playerId === this.currentPlayer.id)
                 .sort((a, b) => new Date(b.date) - new Date(a.date));
         },
         liveScore() {
@@ -52,11 +54,10 @@ createApp({
             return count === 0 ? 0 : (total / count).toFixed(1);
         }
     },
-    // Le mounted devient ASYNC pour charger les données
+    // Chargement asynchrone (Firebase)
     async mounted() {
         this.isLoading = true;
         try {
-            // On charge les deux collections en parallèle
             const [playersData, evalsData] = await Promise.all([
                 storage.getPlayers(),
                 storage.getEvaluations()
@@ -83,15 +84,12 @@ createApp({
         async savePlayerForm() {
             this.isLoading = true;
             try {
-                // On utilise l'ID généré localement pour lier (id) mais Firebase gérera le sien (firestoreId)
                 if (!this.formPlayer.id) {
                     this.formPlayer.id = crypto.randomUUID(); 
                 }
                 
-                // Sauvegarde Cloud
                 const savedPlayer = await storage.savePlayer(this.formPlayer);
                 
-                // Mise à jour locale (sans recharger toute la page)
                 const index = this.players.findIndex(p => p.id === savedPlayer.id);
                 if (index !== -1) {
                     this.players[index] = savedPlayer;
@@ -117,12 +115,12 @@ createApp({
         // --- GESTION EVALUATION ---
         startEvaluation() {
             this.currentEval = {
-                // Pas d'ID Firestore ici, il sera créé à la sauvegarde
-                playerId: this.currentPlayer.id, // Lien avec le joueur
+                playerId: this.currentPlayer.id,
                 date: new Date().toISOString().split('T')[0],
                 ratings: {},
-                evaluator: 'Coach' // Tu pourras rendre ça dynamique plus tard
+                evaluator: 'Coach' 
             };
+            // Initialisation des notes à 5 selon le schema config.js
             for (const cat in this.schema) {
                 this.currentEval.ratings[cat] = {};
                 this.schema[cat].forEach(c => this.currentEval.ratings[cat][c.key] = 5);
@@ -133,8 +131,9 @@ createApp({
         async submitEval() {
             this.isLoading = true;
             try {
-                // 1. Calculs
                 this.currentEval.overallScore = this.liveScore;
+                
+                // Calcul des moyennes par catégorie
                 const avgs = {};
                 for(const cat in this.currentEval.ratings) {
                     let sum = 0, c = 0;
@@ -143,19 +142,16 @@ createApp({
                 }
                 this.currentEval.averages = avgs;
 
-                // 2. Sauvegarde Cloud de l'évaluation
                 const savedEval = await storage.saveEvaluation(this.currentEval);
-                this.evaluations.unshift(savedEval); // Ajout en haut de liste locale
+                this.evaluations.unshift(savedEval);
 
-                // 3. Mise à jour de la note du joueur (Cloud + Local)
                 const pIdx = this.players.findIndex(p => p.id === this.currentPlayer.id);
                 if(pIdx !== -1) {
                     this.players[pIdx].lastRating = this.currentEval.overallScore;
-                    // On sauvegarde juste le joueur mis à jour
                     await storage.savePlayer(this.players[pIdx]);
                 }
 
-                this.selectPlayer(this.players[pIdx]); // Retour fiche
+                this.selectPlayer(this.players[pIdx]); 
             } catch (e) {
                 console.error(e);
                 alert("Erreur lors de la sauvegarde de l'évaluation");
@@ -164,16 +160,14 @@ createApp({
             }
         },
 
-        // --- CHART JS (Inchangé) ---
-renderChart() {
+        // --- CHART JS (Mise à jour pour les 4 Piliers) ---
+        renderChart() {
             const ctx = document.getElementById('radarChart');
-            // Vérification de sécurité
             if (!ctx || !this.playerEvaluations.length) return;
 
             const lastEval = this.playerEvaluations[0];
 
-            // On mappe les nouvelles données (4 axes)
-            // On utilise || 0 pour éviter les bugs si une note manque
+            // Mapping des 4 axes (Mental, Physique, Technique, Tactique)
             const data = [
                 lastEval.averages.mental || 0,
                 lastEval.averages.physical || 0,
@@ -186,13 +180,11 @@ renderChart() {
             this.chartInstance = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    // Les 4 axes du graphique
                     labels: ['🧠 Mental', '⚡ Physique', '🏀 Technique', '♟️ Tactique'],
                     datasets: [{
                         label: 'Niveau Actuel',
                         data: data,
-                        // Couleur Orange plus professionnelle
-                        backgroundColor: 'rgba(234, 88, 12, 0.4)', 
+                        backgroundColor: 'rgba(234, 88, 12, 0.4)',
                         borderColor: '#ea580c',
                         pointBackgroundColor: '#fff',
                         pointBorderColor: '#ea580c',
@@ -205,21 +197,15 @@ renderChart() {
                         r: {
                             min: 0,
                             max: 10,
-                            ticks: {
-                                stepSize: 2, // Moins chargé visuellement
-                                backdropColor: 'transparent' // Plus propre
-                            },
-                            pointLabels: {
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
-                            }
+                            ticks: { stepSize: 2, backdropColor: 'transparent' },
+                            pointLabels: { font: { size: 14, weight: 'bold' } }
                         }
                     },
-                    plugins: {
-                        legend: { display: false } // On cache la légende pour gagner de la place
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
-        };
+        }
+    } // Fin de methods
+}); // Fin de createApp({})
+// .mount('#app') est appelé ici :
+.mount('#app');

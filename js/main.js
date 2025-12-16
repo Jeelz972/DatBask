@@ -1,11 +1,10 @@
 // js/main.js
-import { categoryNames, evaluationSchema } from './config.js';
+import { categoryNames, evaluationSchema, playerArchetypes } from './config.js';
 import { storage } from './storage.js';
 import { playerManager } from './playerManager.js';
 
 const { createApp } = Vue;
 
-// On stocke l'application dans une constante pour éviter l'erreur de syntaxe
 const app = createApp({
     data() {
         return {
@@ -14,17 +13,18 @@ const app = createApp({
             players: [],
             evaluations: [],
             
-            // Filtres
-            filters: { search: '', category: '' },
+            // Filtres (Ajout du filtre Archetype)
+            filters: { search: '', category: '', archetype: '' },
             
-            // Objets en cours
             formPlayer: playerManager.createEmpty(),
             currentPlayer: null,
             currentEval: null,
+            isEditingEval: false, // Savoir si on modifie ou crée
             
             // Config importée
             schema: evaluationSchema,
             catNames: categoryNames,
+            archetypesList: playerArchetypes, // Liste importée
             chartInstance: null
         };
     },
@@ -34,7 +34,9 @@ const app = createApp({
                 if(!p) return false;
                 const matchName = (p.firstName + ' ' + p.lastName).toLowerCase().includes(this.filters.search.toLowerCase());
                 const matchCat = this.filters.category ? p.category === this.filters.category : true;
-                return matchName && matchCat;
+                // Filtre par Archétype
+                const matchArch = this.filters.archetype ? p.archetype === this.filters.archetype : true;
+                return matchName && matchCat && matchArch;
             });
         },
         playerEvaluations() {
@@ -55,7 +57,6 @@ const app = createApp({
             return count === 0 ? 0 : (total / count).toFixed(1);
         }
     },
-    // Chargement asynchrone (Firebase)
     async mounted() {
         this.isLoading = true;
         try {
@@ -85,9 +86,7 @@ const app = createApp({
         async savePlayerForm() {
             this.isLoading = true;
             try {
-                if (!this.formPlayer.id) {
-                    this.formPlayer.id = crypto.randomUUID(); 
-                }
+                if (!this.formPlayer.id) this.formPlayer.id = crypto.randomUUID(); 
                 
                 const savedPlayer = await storage.savePlayer(this.formPlayer);
                 
@@ -97,7 +96,6 @@ const app = createApp({
                 } else {
                     this.players.push(savedPlayer);
                 }
-                
                 this.currentView = 'list';
             } catch (e) {
                 console.error(e);
@@ -113,27 +111,60 @@ const app = createApp({
             setTimeout(() => this.renderChart(), 100);
         },
 
-        // --- GESTION EVALUATION ---
+        // --- GESTION EVALUATION (CREATE / EDIT / DELETE) ---
+        
         startEvaluation() {
+            this.isEditingEval = false;
             this.currentEval = {
                 playerId: this.currentPlayer.id,
                 date: new Date().toISOString().split('T')[0],
                 ratings: {},
-                evaluator: 'Coach' 
+                evaluator: 'Coach'
             };
-            // Initialisation des notes à 5
             for (const cat in this.schema) {
                 this.currentEval.ratings[cat] = {};
                 this.schema[cat].forEach(c => this.currentEval.ratings[cat][c.key] = 5);
             }
             this.currentView = 'evaluate';
         },
-        
+
+        // Fonction pour charger une évaluation existante
+        editEvaluation(evalData) {
+            this.isEditingEval = true;
+            // On fait une copie profonde pour ne pas modifier la liste tant qu'on n'a pas sauvegardé
+            this.currentEval = JSON.parse(JSON.stringify(evalData));
+            this.currentView = 'evaluate';
+        },
+
+        // Fonction pour supprimer
+        async deleteEvaluation(evalId) {
+            if(!confirm("Es-tu sûr de vouloir supprimer cette évaluation ?")) return;
+            
+            this.isLoading = true;
+            try {
+                await storage.deleteEvaluation(evalId);
+                // Retirer de la liste locale
+                this.evaluations = this.evaluations.filter(e => e.id !== evalId);
+                
+                // Mettre à jour la note globale du joueur (revenir à l'éval précédente)
+                await this.refreshPlayerRating();
+                
+                // Rafraichir le graphique
+                this.renderChart();
+            } catch (e) {
+                console.error(e);
+                alert("Erreur lors de la suppression");
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
         async submitEval() {
             this.isLoading = true;
             try {
                 this.currentEval.overallScore = this.liveScore;
                 
+                // Calcul moyennes
                 const avgs = {};
                 for(const cat in this.currentEval.ratings) {
                     let sum = 0, c = 0;
@@ -142,32 +173,56 @@ const app = createApp({
                 }
                 this.currentEval.averages = avgs;
 
+                // Sauvegarde Cloud (Création ou Update géré par storage)
                 const savedEval = await storage.saveEvaluation(this.currentEval);
-                this.evaluations.unshift(savedEval);
 
-                const pIdx = this.players.findIndex(p => p.id === this.currentPlayer.id);
-                if(pIdx !== -1) {
-                    this.players[pIdx].lastRating = this.currentEval.overallScore;
-                    await storage.savePlayer(this.players[pIdx]);
+                if (this.isEditingEval) {
+                    // Si on édite, on remplace dans la liste locale
+                    const idx = this.evaluations.findIndex(e => e.id === savedEval.id);
+                    if(idx !== -1) this.evaluations[idx] = savedEval;
+                } else {
+                    // Si nouveau, on ajoute
+                    this.evaluations.unshift(savedEval);
                 }
 
-                this.selectPlayer(this.players[pIdx]); 
+                // Mettre à jour la note du joueur
+                await this.refreshPlayerRating();
+
+                this.selectPlayer(this.players.find(p => p.id === this.currentPlayer.id)); 
             } catch (e) {
                 console.error(e);
-                alert("Erreur lors de la sauvegarde de l'évaluation");
+                alert("Erreur lors de la sauvegarde");
             } finally {
                 this.isLoading = false;
             }
         },
 
-        // --- CHART JS ---
+        // Utilitaire pour recalculer la note du joueur selon sa dernière évaluation valide
+        async refreshPlayerRating() {
+            // On ré-filtre les évals du joueur actuel
+            const pEvals = this.evaluations
+                .filter(e => e.playerId === this.currentPlayer.id)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const pIdx = this.players.findIndex(p => p.id === this.currentPlayer.id);
+            if(pIdx !== -1) {
+                // Si il reste des évals, on prend la plus récente, sinon null
+                this.players[pIdx].lastRating = pEvals.length > 0 ? pEvals[0].overallScore : null;
+                await storage.savePlayer(this.players[pIdx]);
+            }
+        },
+
         renderChart() {
             const ctx = document.getElementById('radarChart');
-            if (!ctx || !this.playerEvaluations.length) return;
+            if (!ctx) return;
+            
+            // Si pas d'éval, on affiche un graph vide ou rien
+            if (!this.playerEvaluations.length) {
+                if(this.chartInstance) this.chartInstance.destroy();
+                return;
+            }
 
             const lastEval = this.playerEvaluations[0];
-
-            // 4 Axes
             const data = [
                 lastEval.averages.mental || 0,
                 lastEval.averages.physical || 0,
@@ -188,15 +243,13 @@ const app = createApp({
                         borderColor: '#ea580c',
                         pointBackgroundColor: '#fff',
                         pointBorderColor: '#ea580c',
-                        pointHoverBackgroundColor: '#ea580c',
                         borderWidth: 2
                     }]
                 },
                 options: {
                     scales: {
                         r: {
-                            min: 0,
-                            max: 10,
+                            min: 0, max: 10,
                             ticks: { stepSize: 2, backdropColor: 'transparent' },
                             pointLabels: { font: { size: 14, weight: 'bold' } }
                         }
@@ -208,5 +261,4 @@ const app = createApp({
     }
 });
 
-// C'est ici que l'erreur se produisait. Maintenant c'est propre :
 app.mount('#app');

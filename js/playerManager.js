@@ -1,21 +1,22 @@
+// js/playerManager.js
 export const playerManager = {
-    // Génère un objet joueur vide prêt à être rempli
     createEmpty() {
         return {
-            id: null, // Sera généré à la sauvegarde
+            id: null, 
             firstName: '',
             lastName: '',
             number: '',
             birthDate: '',
             category: 'U18',
             team: 'Équipe 1',
+            // Nouvel attribut
+            archetype: 'Non défini', 
             morphology: { height: '', weight: '', dominantHand: 'Droite' },
             profile: { primaryPosition: 'Meneuse', offensiveProfile: '' },
             lastRating: null
         };
     },
 
-    // Calcule la couleur du badge en fonction de la note
     getScoreColor(score) {
         const s = parseFloat(score);
         if (!s) return 'bg-gray-400';

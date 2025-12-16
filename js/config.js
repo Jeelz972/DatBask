@@ -7,12 +7,28 @@ export const categoryNames = {
     tactical: '♟️ Tactique & QI Basket'
 };
 
+// Liste des Archétypes NBA 2K style
+export const playerArchetypes = [
+    "Non défini",
+    "Général du Parquet (Playmaker)",
+    "Scoreur 3 Niveaux",
+    "Menace Offensive & Défensive (2-Way)",
+    "Cadenas Extérieur (Lockdown)",
+    "Tireur d'Élite (Sharpshooter)",
+    "Slasher / Finisseur",
+    "Ailier Polyvalent (All-Around)",
+    "Intérieur Fuyant (Stretch Big)",
+    "Protecteur de Cercle (Rim Protector)",
+    "Monstre de la Raquette (Paint Beast)",
+    "Nettoyeur de Raquette (Rebondeur)"
+];
+
 export const evaluationSchema = {
     mental: [
         { key: 'coachability', label: 'Coachabilité & Écoute' },
         { key: 'resilience', label: 'Gestion de l\'échec (Résilience)' },
         { key: 'leadership', label: 'Leadership & Communication' },
-        { key: 'workEthic', label: 'Éthique de travail (Le caché)' },
+        { key: 'workEthic', label: 'Éthique de travail' },
         { key: 'grinta', label: 'Compétitivité (Grinta)' }
     ],
     physical: [

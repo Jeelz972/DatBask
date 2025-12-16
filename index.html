@@ -169,6 +169,10 @@
                     <h2 class="font-bold text-xl">{{ isEditingEval ? 'Modifier l\'évaluation' : 'Nouvelle Évaluation' }}</h2>
                     <span class="text-2xl font-bold text-blue-600">{{ liveScore }} / 10</span>
                 </div>
+                <div class="flex flex-col items-end">
+                    <span class="text-xs text-slate-500 font-bold uppercase">Archétype projeté</span>
+                    <span class="text-sm font-bold text-orange-600">{{ previewArchetype }}</span>
+                </div>
                 
                 <form @submit.prevent="submitEval">
                     <div class="mb-4 grid grid-cols-2 gap-4">

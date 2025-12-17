@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coach Assistant - Scouting</title>
+    <title>Coach Assistant - Scouting Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div v-if="isLoading" class="bg-blue-600 text-white text-xs text-center py-1">
-                <i class="fa-solid fa-sync fa-spin"></i> Synchronisation...
+                <i class="fa-solid fa-sync fa-spin"></i> Synchronisation Cloud...
             </div>
         </nav>
 
@@ -83,14 +83,14 @@
                     </div>
                     
                     <div class="border-t pt-4 mt-4">
-                        <h3 class="font-bold text-orange-600 mb-2">Profil Basket (2K)</h3>
+                        <h3 class="font-bold text-orange-600 mb-2">Profil Basket</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                              <div>
                                 <label class="block text-sm font-bold mb-1">Poste</label>
                                 <select v-model="formPlayer.profile.primaryPosition" class="w-full border p-2 rounded"><option>Meneuse</option><option>Arrière</option><option>Ailière</option><option>Ailière forte</option><option>Pivot</option></select>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold mb-1">Archétype</label>
+                                <label class="block text-sm font-bold mb-1">Archétype (Initial)</label>
                                 <select v-model="formPlayer.archetype" class="w-full border p-2 rounded bg-orange-50">
                                     <option v-for="arch in archetypesList" :value="arch">{{ arch }}</option>
                                 </select>
@@ -148,14 +148,9 @@
                                 </div>
                                 <div class="flex items-center gap-4">
                                     <span class="font-bold text-lg" :class="getScoreColor(ev.overallScore).replace('bg-', 'text-')">{{ ev.overallScore }}/10</span>
-                                    
                                     <div class="flex gap-2">
-                                        <button @click="editEvaluation(ev)" class="text-blue-500 hover:text-blue-700 p-1" title="Modifier">
-                                            <i class="fa-solid fa-pen"></i>
-                                        </button>
-                                        <button @click="deleteEvaluation(ev.id)" class="text-red-500 hover:text-red-700 p-1" title="Supprimer">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
+                                        <button @click="editEvaluation(ev)" class="text-blue-500 hover:text-blue-700 p-1"><i class="fa-solid fa-pen"></i></button>
+                                        <button @click="deleteEvaluation(ev.id)" class="text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-trash"></i></button>
                                     </div>
                                 </div>
                             </li>
@@ -166,30 +161,25 @@
 
             <div v-if="currentView === 'evaluate'" class="max-w-4xl mx-auto bg-white rounded shadow p-6">
                 <div class="flex justify-between items-center mb-6 sticky top-0 bg-white z-10 py-2 border-b">
-                    <h2 class="font-bold text-xl">{{ isEditingEval ? 'Modifier l\'évaluation' : 'Nouvelle Évaluation' }}</h2>
-                    <span class="text-2xl font-bold text-blue-600">{{ liveScore }} / 10</span>
-                </div>
-                <div class="flex flex-col items-end">
-                    <span class="text-xs text-slate-500 font-bold uppercase">Archétype projeté</span>
-                    <span class="text-sm font-bold text-orange-600">{{ previewArchetype }}</span>
+                    <div>
+                        <h2 class="font-bold text-xl">{{ isEditingEval ? 'Modifier' : 'Nouvelle Évaluation' }}</h2>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <span class="text-2xl font-bold text-blue-600">{{ liveScore }} / 10</span>
+                        <div class="text-xs text-slate-500 font-bold uppercase mt-1">
+                            Archétype projeté : <span class="text-orange-600">{{ previewArchetype }}</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <form @submit.prevent="submitEval">
                     <div class="mb-4 grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-bold">Date</label>
-                            <input type="date" v-model="currentEval.date" class="border p-2 rounded w-full">
-                        </div>
-                        <div>
-                             <label class="block text-sm font-bold">Coach</label>
-                            <input type="text" v-model="currentEval.evaluator" class="border p-2 rounded w-full">
-                        </div>
+                        <div><label class="block text-sm font-bold">Date</label><input type="date" v-model="currentEval.date" class="border p-2 rounded w-full"></div>
+                        <div><label class="block text-sm font-bold">Coach</label><input type="text" v-model="currentEval.evaluator" class="border p-2 rounded w-full"></div>
                     </div>
 
                     <div v-for="(criteriaList, catKey) in schema" :key="catKey" class="mb-6 bg-slate-50 p-4 rounded border">
-                        <h3 class="font-bold text-lg uppercase mb-3 text-slate-700 flex justify-between">
-                            {{ catNames[catKey] }}
-                        </h3>
+                        <h3 class="font-bold text-lg uppercase mb-3 text-slate-700">{{ catNames[catKey] }}</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                             <div v-for="c in criteriaList" :key="c.key">
                                 <div class="flex justify-between text-sm mb-1">
@@ -203,16 +193,274 @@
 
                     <div class="flex justify-end gap-2 mt-6 border-t pt-4">
                         <button type="button" @click="currentView='playerDetail'" class="px-4 py-2 border rounded hover:bg-slate-100">Annuler</button>
-                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700">
-                            {{ isEditingEval ? 'Mettre à jour' : 'Sauvegarder' }}
-                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700">{{ isEditingEval ? 'Mettre à jour' : 'Sauvegarder' }}</button>
                     </div>
                 </form>
             </div>
-
         </main>
     </div>
-    
-    <script type="module" src="./js/main.js"></script>
+
+    <script type="module">
+        // Import Firebase depuis CDN (Compatible <script type="module">)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ==========================================
+        // 1. CONFIGURATION (REMPLACEZ PAR LA VOTRE)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "VOTRE_API_KEY_ICI",
+            authDomain: "votre-projet.firebaseapp.com",
+            projectId: "votre-projet",
+            storageBucket: "votre-projet.appspot.com",
+            messagingSenderId: "123456",
+            appId: "1:123456:web:xxxxx"
+        };
+
+        const appFirebase = initializeApp(firebaseConfig);
+        const db = getFirestore(appFirebase);
+        const COLLECTIONS = { PLAYERS: 'players', EVALS: 'evaluations' };
+
+        // ==========================================
+        // 2. CONFIGURATION DATA (Basket)
+        // ==========================================
+        const categoryNames = {
+            mental: '🧠 Mental & Attitude',
+            physical: '⚡ Physique & Moteur',
+            technical: '🏀 Technique & Skills',
+            tactical: '♟️ Tactique & QI Basket'
+        };
+        const playerArchetypes = [
+            "Non défini", "Général du Parquet (Playmaker)", "Scoreur 3 Niveaux", 
+            "Menace Offensive & Défensive (2-Way)", "Cadenas Extérieur (Lockdown)", 
+            "Tireur d'Élite (Sharpshooter)", "Slasher / Finisseur", 
+            "Ailier Polyvalent (All-Around)", "Intérieur Fuyant (Stretch Big)", 
+            "Protecteur de Cercle (Rim Protector)", "Monstre de la Raquette (Paint Beast)", 
+            "Nettoyeur de Raquette (Rebondeur)"
+        ];
+        const evaluationSchema = {
+            mental: [ { key: 'coachability', label: 'Coachabilité' }, { key: 'resilience', label: 'Résilience' }, { key: 'leadership', label: 'Leadership' }, { key: 'workEthic', label: 'Éthique' }, { key: 'grinta', label: 'Grinta' } ],
+            physical: [ { key: 'explosiveness', label: 'Explosivité' }, { key: 'endurance', label: 'VMA / Cardio' }, { key: 'impact', label: 'Impact Physique' }, { key: 'laterality', label: 'Jeu de jambes' }, { key: 'stability', label: 'Proprioception' } ],
+            technical: [ { key: 'shooting', label: 'Tir' }, { key: 'handle', label: 'Dribble' }, { key: 'passing', label: 'Passe' }, { key: 'offBall', label: 'Jeu sans ballon' }, { key: 'finishing', label: 'Finition' } ],
+            tactical: [ { key: 'pnr', label: 'Lecture P&R' }, { key: 'spacing', label: 'Spacing' }, { key: 'rotation', label: 'Rotations Déf.' }, { key: 'gameMgmt', label: 'Gestion Match' }, { key: 'readDefense', label: 'Lecture Défense' } ]
+        };
+
+        // ==========================================
+        // 3. LOGIQUE ARCHETYPE
+        // ==========================================
+        function calculateArchetype(ratings) {
+            const getVal = (cat, key) => ratings[cat] && ratings[cat][key] ? ratings[cat][key] : 0;
+            const shoot = getVal('technical', 'shooting');
+            const slash = (getVal('technical', 'finishing') + getVal('physical', 'explosiveness')) / 2;
+            const play = (getVal('technical', 'passing') + getVal('technical', 'handle') + getVal('tactical', 'pnr')) / 3;
+            const def = (getVal('physical', 'laterality') + getVal('tactical', 'readDefense') + getVal('physical', 'impact')) / 3;
+            const inside = (getVal('physical', 'impact') + getVal('technical', 'finishing')) / 2;
+            
+            let total = 0, count = 0;
+            for (const cat in ratings) { for (const key in ratings[cat]) { total += ratings[cat][key]; count++; } }
+            const globalAvg = count > 0 ? total / count : 0;
+
+            if (globalAvg >= 8.0) return (def >= 8 && shoot >= 8) ? "Menace Offensive & Défensive (2-Way)" : "Ailier Polyvalent (All-Around)";
+            if (shoot >= 8) return (play >= 7) ? "Meneur Scoreur" : "Tireur d'Élite (Sharpshooter)";
+            if (play >= 7.5 && play > shoot) return "Général du Parquet (Playmaker)";
+            if (def >= 8 && def > shoot && def > slash) return (inside >= 7) ? "Protecteur de Cercle (Rim Protector)" : "Cadenas Extérieur (Lockdown)";
+            if (slash >= 7.5) return "Slasher / Finisseur";
+            if (inside >= 7.5) return (shoot >= 6) ? "Intérieur Fuyant (Stretch Big)" : "Monstre de la Raquette (Paint Beast)";
+            if (globalAvg >= 6) return "Joueur de Rotation (Role Player)";
+            return "Prospect en Développement";
+        }
+
+        // ==========================================
+        // 4. LOGIQUE VUE.JS
+        // ==========================================
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentView: 'list',
+                    isLoading: false,
+                    players: [],
+                    evaluations: [],
+                    filters: { search: '', category: '', archetype: '' },
+                    formPlayer: this.getEmptyPlayer(),
+                    currentPlayer: null,
+                    currentEval: null,
+                    isEditingEval: false,
+                    schema: evaluationSchema,
+                    catNames: categoryNames,
+                    archetypesList: playerArchetypes,
+                    chartInstance: null
+                };
+            },
+            computed: {
+                filteredPlayers() {
+                    return this.players.filter(p => {
+                        if(!p) return false;
+                        const matchName = (p.firstName + ' ' + p.lastName).toLowerCase().includes(this.filters.search.toLowerCase());
+                        const matchCat = this.filters.category ? p.category === this.filters.category : true;
+                        const matchArch = this.filters.archetype ? p.archetype === this.filters.archetype : true;
+                        return matchName && matchCat && matchArch;
+                    });
+                },
+                playerEvaluations() {
+                    if (!this.currentPlayer) return [];
+                    return this.evaluations.filter(e => e.playerId === this.currentPlayer.id).sort((a, b) => new Date(b.date) - new Date(a.date));
+                },
+                liveScore() {
+                    if (!this.currentEval) return 0;
+                    let total = 0, count = 0;
+                    for (const cat in this.currentEval.ratings) { for (const key in this.currentEval.ratings[cat]) { total += this.currentEval.ratings[cat][key]; count++; } }
+                    return count === 0 ? 0 : (total / count).toFixed(1);
+                },
+                previewArchetype() {
+                    if (!this.currentEval || !this.currentEval.ratings) return "...";
+                    return calculateArchetype(this.currentEval.ratings);
+                }
+            },
+            async mounted() {
+                this.isLoading = true;
+                try {
+                    const [pData, eData] = await Promise.all([
+                        getDocs(query(collection(db, COLLECTIONS.PLAYERS), orderBy("lastName"))),
+                        getDocs(query(collection(db, COLLECTIONS.EVALS), orderBy("date", "desc")))
+                    ]);
+                    this.players = pData.docs.map(d => ({id: d.id, ...d.data()}));
+                    this.evaluations = eData.docs.map(d => ({id: d.id, ...d.data()}));
+                } catch (error) {
+                    console.error(error);
+                    alert("Erreur connexion Firebase. Vérifiez la config.");
+                } finally { this.isLoading = false; }
+            },
+            methods: {
+                getEmptyPlayer() {
+                    return { id: null, firstName: '', lastName: '', number: '', birthDate: '', category: 'U18', team: 'Équipe 1', archetype: 'Non défini', morphology: { height: '', weight: '', dominantHand: 'Droite' }, profile: { primaryPosition: 'Meneuse', offensiveProfile: '' }, lastRating: null };
+                },
+                getScoreColor(score) {
+                    const s = parseFloat(score);
+                    if (!s) return 'bg-gray-400';
+                    return s >= 8 ? 'bg-green-600' : s >= 6 ? 'bg-yellow-500' : s >= 4 ? 'bg-orange-500' : 'bg-red-600';
+                },
+                prepareNewPlayer() {
+                    this.formPlayer = this.getEmptyPlayer();
+                    this.currentView = 'playerForm';
+                },
+                async savePlayerForm() {
+                    this.isLoading = true;
+                    try {
+                        if (!this.formPlayer.id) this.formPlayer.id = crypto.randomUUID();
+                        let savedData;
+                        if (this.formPlayer.firestoreId) {
+                            const { firestoreId, ...data } = this.formPlayer;
+                            await updateDoc(doc(db, COLLECTIONS.PLAYERS, firestoreId), data);
+                            savedData = this.formPlayer;
+                        } else {
+                            const ref = await addDoc(collection(db, COLLECTIONS.PLAYERS), this.formPlayer);
+                            savedData = { ...this.formPlayer, firestoreId: ref.id, id: ref.id };
+                        }
+                        const idx = this.players.findIndex(p => p.id === savedData.id);
+                        if (idx !== -1) this.players[idx] = savedData; else this.players.push(savedData);
+                        this.currentView = 'list';
+                    } catch (e) { console.error(e); alert("Erreur sauvegarde joueur"); } finally { this.isLoading = false; }
+                },
+                selectPlayer(player) {
+                    this.currentPlayer = player;
+                    this.currentView = 'playerDetail';
+                    setTimeout(() => this.renderChart(), 100);
+                },
+                startEvaluation() {
+                    this.isEditingEval = false;
+                    this.currentEval = { playerId: this.currentPlayer.id, date: new Date().toISOString().split('T')[0], ratings: {}, evaluator: 'Coach' };
+                    for (const cat in this.schema) { this.currentEval.ratings[cat] = {}; this.schema[cat].forEach(c => this.currentEval.ratings[cat][c.key] = 5); }
+                    this.currentView = 'evaluate';
+                },
+                editEvaluation(evalData) {
+                    this.isEditingEval = true;
+                    this.currentEval = JSON.parse(JSON.stringify(evalData));
+                    this.currentView = 'evaluate';
+                },
+                async deleteEvaluation(evalId) {
+                    if(!confirm("Supprimer cette évaluation ?")) return;
+                    this.isLoading = true;
+                    try {
+                        await deleteDoc(doc(db, COLLECTIONS.EVALS, evalId));
+                        this.evaluations = this.evaluations.filter(e => e.id !== evalId);
+                        await this.refreshPlayerRating();
+                        this.renderChart();
+                    } catch(e) { console.error(e); alert("Erreur suppression"); } finally { this.isLoading = false; }
+                },
+                async submitEval() {
+                    this.isLoading = true;
+                    try {
+                        this.currentEval.overallScore = this.liveScore;
+                        const avgs = {};
+                        for(const cat in this.currentEval.ratings) {
+                            let sum = 0, c = 0;
+                            Object.values(this.currentEval.ratings[cat]).forEach(v => { sum += v; c++; });
+                            avgs[cat] = (sum/c).toFixed(1);
+                        }
+                        this.currentEval.averages = avgs;
+
+                        let savedEval;
+                        if (this.currentEval.id) {
+                            const { id, ...data } = this.currentEval;
+                            await updateDoc(doc(db, COLLECTIONS.EVALS, id), data);
+                            savedEval = this.currentEval;
+                        } else {
+                            const ref = await addDoc(collection(db, COLLECTIONS.EVALS), this.currentEval);
+                            savedEval = { ...this.currentEval, id: ref.id };
+                        }
+
+                        if (this.isEditingEval) {
+                            const idx = this.evaluations.findIndex(e => e.id === savedEval.id);
+                            if(idx !== -1) this.evaluations[idx] = savedEval;
+                        } else {
+                            this.evaluations.unshift(savedEval);
+                        }
+
+                        const newArch = calculateArchetype(this.currentEval.ratings);
+                        const pIdx = this.players.findIndex(p => p.id === this.currentPlayer.id);
+                        if(pIdx !== -1) {
+                            this.players[pIdx].lastRating = this.currentEval.overallScore;
+                            this.players[pIdx].archetype = newArch;
+                            const { firestoreId, ...pData } = this.players[pIdx];
+                            if(firestoreId) await updateDoc(doc(db, COLLECTIONS.PLAYERS, firestoreId), pData);
+                        }
+                        this.selectPlayer(this.players[pIdx]);
+                    } catch(e) { console.error(e); alert("Erreur sauvegarde eval"); } finally { this.isLoading = false; }
+                },
+                async refreshPlayerRating() {
+                    const pEvals = this.evaluations.filter(e => e.playerId === this.currentPlayer.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
+                    const pIdx = this.players.findIndex(p => p.id === this.currentPlayer.id);
+                    if(pIdx !== -1) {
+                        if(pEvals.length > 0) {
+                            this.players[pIdx].lastRating = pEvals[0].overallScore;
+                            this.players[pIdx].archetype = calculateArchetype(pEvals[0].ratings);
+                        } else {
+                            this.players[pIdx].lastRating = null;
+                            this.players[pIdx].archetype = "Non défini";
+                        }
+                        const { firestoreId, ...pData } = this.players[pIdx];
+                        if(firestoreId) await updateDoc(doc(db, COLLECTIONS.PLAYERS, firestoreId), pData);
+                    }
+                },
+                renderChart() {
+                    const ctx = document.getElementById('radarChart');
+                    if (!ctx || !this.playerEvaluations.length) { if(this.chartInstance) this.chartInstance.destroy(); return; }
+                    const lastEval = this.playerEvaluations[0];
+                    const data = [ lastEval.averages.mental||0, lastEval.averages.physical||0, lastEval.averages.technical||0, lastEval.averages.tactical||0 ];
+                    if (this.chartInstance) this.chartInstance.destroy();
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: ['🧠 Mental', '⚡ Physique', '🏀 Technique', '♟️ Tactique'],
+                            datasets: [{ label: 'Actuel', data: data, backgroundColor: 'rgba(234, 88, 12, 0.4)', borderColor: '#ea580c', borderWidth: 2 }]
+                        },
+                        options: { scales: { r: { min: 0, max: 10, ticks: { stepSize: 2, backdropColor: 'transparent' } } }, plugins: { legend: { display: false } } }
+                    });
+                }
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>

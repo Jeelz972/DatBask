@@ -2,478 +2,479 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProStats Basket - Prototype Avancé</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LiveStats Pro V2 - Responsive</title>
     <style>
-        :root { --primary: #0056b3; --accent: #ffc107; --bg: #f0f2f5; --court-bg: #d19a6a; --line: #fff; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* LAYOUT */
-        aside { width: 300px; background: #fff; padding: 15px; display: flex; flex-direction: column; border-right: 1px solid #ccc; overflow-y: auto; }
-        main { flex: 1; display: flex; flex-direction: column; position: relative; }
-        
-        /* HEADER & CHRONO */
-        header { background: #222; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .clock-display { font-size: 3rem; font-family: monospace; font-weight: bold; color: var(--accent); cursor: pointer; }
-        .score-board { font-size: 2rem; font-weight: bold; }
+        :root { 
+            --primary: #0056b3; --accent: #ffc107; --bg: #f4f4f9; 
+            --court-color: #d8ac84; --line: #fff;
+            --home-color: #0056b3; --away-color: #d63031;
+        }
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* TERRAIN (COURT) */
-        #court-container { flex: 1; position: relative; background: #333; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        canvas { background: var(--court-bg); border: 2px solid #fff; cursor: crosshair; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        
-        /* PLAYERS LIST */
-        .player-row { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; align-items: center; }
-        .player-row:hover { background: #f9f9f9; }
-        .player-row.active { border-left: 4px solid var(--primary); background: #eef; }
-        .on-bench { opacity: 0.6; background: #eee; }
-        .foul-dot { height: 8px; width: 8px; background: red; border-radius: 50%; display: inline-block; margin-right: 2px; }
-        
-        /* ACTIONS & LOGS */
-        .log-panel { height: 200px; background: #fff; border-top: 2px solid #444; overflow-y: scroll; padding: 10px; font-size: 0.9rem; }
-        .log-item { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #eee; }
-        .btn-del { color: red; cursor: pointer; font-weight: bold; margin-left: 10px; }
+        /* --- NAV TABS --- */
+        .nav-tabs { display: flex; background: #333; color: white; padding: 0; }
+        .nav-item { flex: 1; padding: 15px; text-align: center; cursor: pointer; border-bottom: 4px solid transparent; font-weight: bold; }
+        .nav-item.active { border-bottom-color: var(--accent); background: #444; }
 
-        /* MODAL POPUP */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
-        .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 400px; text-align: center; }
-        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn { padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-blue { background: var(--primary); color: white; }
-        .btn-sub { background: #6c757d; color: white; font-size: 0.8rem; padding: 2px 6px; }
+        /* --- HEADER --- */
+        header { background: #222; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; height: 60px; }
+        .score-box { font-size: 1.5rem; font-weight: bold; display: flex; gap: 15px; align-items: center; }
+        .clock { font-family: monospace; font-size: 2rem; color: var(--accent); cursor: pointer; border: 1px solid #555; padding: 2px 10px; border-radius: 4px; }
+        .q-selector { font-size: 0.9rem; background: #444; color: #fff; border: none; padding: 5px; }
 
-        /* MARQUEUR SUR TERRAIN */
-        .shot-marker { position: absolute; width: 10px; height: 10px; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; }
-        .made { background: green; border: 1px solid white; }
-        .miss { background: red; opacity: 0.6; }
+        /* --- VIEWS CONTAINER --- */
+        .view-container { flex: 1; display: none; overflow: hidden; position: relative; }
+        .view-container.active { display: flex; }
+
+        /* === VIEW 1: INPUT (MATCH) === */
+        #view-input { flex-direction: row; height: 100%; }
+
+        /* Rosters (Sidebars) */
+        .roster-col { width: 220px; background: white; overflow-y: auto; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+        .roster-col.right { border-left: 1px solid #ddd; border-right: none; }
+        .team-header { padding: 10px; color: white; text-align: center; font-weight: bold; }
+        .bg-home { background: var(--home-color); }
+        .bg-away { background: var(--away-color); }
+        
+        .player-card { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .player-card:hover { background: #f0f0f0; }
+        .player-card.selected { background: #ffeeba; border-left: 5px solid var(--accent); }
+        .player-card.benched { opacity: 0.6; background: #eee; }
+        .p-info { display: flex; flex-direction: column; }
+        .p-stats-mini { font-size: 0.75rem; color: #666; }
+        .p-fouls { color: red; font-weight: bold; font-size: 0.8rem; }
+
+        /* Center Area (Court + Actions) */
+        .court-area { flex: 1; display: flex; flex-direction: column; position: relative; background: #333; padding: 10px; align-items: center; justify-content: center; }
+        
+        .action-bar { display: flex; gap: 10px; margin-bottom: 10px; width: 100%; justify-content: center; flex-wrap: wrap; }
+        .btn-stat { padding: 10px 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); flex: 1; max-width: 120px; text-align: center; }
+        .btn-reb { background: #6c5ce7; }
+        .btn-ast { background: #00b894; }
+        .btn-to { background: #d63031; }
+        .btn-foul { background: #e17055; }
+        .btn-blk { background: #2d3436; }
+
+        canvas { background: var(--court-color); border: 2px solid white; box-shadow: 0 0 15px rgba(0,0,0,0.5); max-width: 100%; max-height: 60vh; }
+
+        /* Logs Overlay */
+        .log-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 100px; background: rgba(255,255,255,0.9); overflow-y: auto; font-size: 0.8rem; border-top: 1px solid #ccc; padding: 5px; }
+        .log-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #eee; }
+
+        /* === VIEW 2: STATS TABLE === */
+        #view-stats { flex-direction: column; overflow-y: auto; padding: 20px; width: 100%; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: white; font-size: 0.9rem; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background: #f2f2f2; }
+        .stat-filter { margin-bottom: 15px; }
+
+        /* === VIEW 3: COACH ADVICE === */
+        #view-coach { flex-direction: column; padding: 20px; overflow-y: auto; width: 100%; }
+        .advice-card { background: white; padding: 15px; border-left: 5px solid var(--primary); margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .advice-card.warning { border-left-color: #d63031; }
+        .advice-title { font-weight: bold; margin-bottom: 5px; display: block; }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 900px) {
+            #view-input { flex-direction: column; }
+            .roster-col { width: 100%; height: 120px; flex-direction: row; overflow-x: auto; overflow-y: hidden; order: 2; border: none; }
+            .court-area { order: 1; height: 50vh; }
+            .player-card { min-width: 140px; border-right: 1px solid #eee; flex-direction: column; text-align: center; }
+            .action-bar { position: absolute; top: 10px; right: 10px; flex-direction: column; width: auto; }
+            .btn-stat { width: 80px; padding: 8px; font-size: 0.8rem; }
+        }
     </style>
 </head>
 <body>
 
-    <aside id="roster-panel">
-        <h3>Effectif (Temps de jeu)</h3>
-        <div id="players-list">
-            </div>
-        <div style="margin-top: auto;">
-            <button class="btn btn-blue" style="width:100%" onclick="exportToHTML()">Exporter Match (HTML)</button>
-            <br><br>
-            <button class="btn btn-sub" style="width:100%" onclick="saveGame()">Sauvegarder Match</button>
+    <nav class="nav-tabs">
+        <div class="nav-item active" onclick="switchTab('input')">MATCH</div>
+        <div class="nav-item" onclick="switchTab('stats')">STATISTIQUES</div>
+        <div class="nav-item" onclick="switchTab('coach')">CONSEILS COACH</div>
+    </nav>
+
+    <header>
+        <div class="score-box">
+            <span style="color: #aaa;">HOME</span> <span id="scoreH" style="color: white;">0</span>
+            <span>-</span>
+            <span id="scoreA" style="color: white;">0</span> <span style="color: #aaa;">AWAY</span>
         </div>
-    </aside>
+        <div>
+            <select id="quarterSelect" class="q-selector" onchange="changePeriod()">
+                <option value="Q1">Q1</option>
+                <option value="Q2">Q2</option>
+                <option value="Q3">Q3</option>
+                <option value="Q4">Q4</option>
+            </select>
+            <span class="clock" id="clock" onclick="toggleClock()">10:00</span>
+        </div>
+    </header>
 
-    <main>
-        <header>
-            <div class="team-name">DOMICILE</div>
-            <div class="score-board"><span id="scoreH">0</span> - <span id="scoreA">0</span></div>
-            <div class="clock-display" id="clock" onclick="toggleClock()">10:00</div>
-            <div class="team-name">VISITEUR</div>
-        </header>
-
-        <div id="court-container">
-            <canvas id="courtCanvas" width="800" height="450"></canvas>
+    <div id="view-input" class="view-container active">
+        
+        <div class="roster-col" id="rosterHome">
+            <div class="team-header bg-home">DOMICILE</div>
             </div>
 
-        <div class="log-panel" id="playByPlay">
-            <strong>Play-by-Play (Historique)</strong>
-            <div id="log-entries"></div>
-        </div>
-    </main>
-
-    <div id="actionModal" class="modal">
-        <div class="modal-content">
-            <h3 id="modalTitle">Action</h3>
-            <p id="shotInfo"></p>
-            <div id="playerSelector" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:5px; margin-bottom:15px;">
-                </div>
+        <div class="court-area">
             
-            <div id="shotActions" class="modal-grid">
-                <button class="btn btn-success" onclick="confirmShot(true)">MARQUÉ</button>
-                <button class="btn btn-danger" onclick="confirmShot(false)">RATÉ</button>
+            <div class="action-bar">
+                <button class="btn-stat btn-reb" onclick="addStat('REB_OFF')">REB OFF</button>
+                <button class="btn-stat btn-reb" onclick="addStat('REB_DEF')">REB DEF</button>
+                <button class="btn-stat btn-ast" onclick="addStat('AST')">PASSE DÉ</button>
+                <button class="btn-stat btn-to" onclick="addStat('TO')">PERTE BALLE</button>
+                <button class="btn-stat btn-foul" onclick="addStat('FOUL')">FAUTE</button>
+                <button class="btn-stat btn-blk" onclick="addStat('BLK')">CONTRE</button>
             </div>
-            <div id="otherActions" class="modal-grid" style="display:none">
-                <button class="btn btn-blue" onclick="recordStat('assist')">Passe Dé</button>
-                <button class="btn btn-blue" onclick="recordStat('reb_off')">Rebond OFF</button>
-                <button class="btn btn-blue" onclick="recordStat('reb_def')">Rebond DEF</button>
-                <button class="btn btn-danger" onclick="recordStat('turnover')">Balle Perdue</button>
-                <button class="btn btn-danger" onclick="recordStat('foul')">Faute</button>
+
+            <canvas id="courtCanvas" width="600" height="340"></canvas>
+            
+            <div class="log-overlay" id="logList">
+                <div style="text-align:center; color:#666;">En attente du coup d'envoi...</div>
             </div>
-            <br>
-            <button class="btn" onclick="closeModal()">Annuler</button>
         </div>
+
+        <div class="roster-col right" id="rosterAway">
+            <div class="team-header bg-away">VISITEUR</div>
+            </div>
+    </div>
+
+    <div id="view-stats" class="view-container">
+        <div class="stat-filter">
+            <label>Filtrer par : </label>
+            <select id="statPeriodFilter" onchange="renderStatsTable()">
+                <option value="ALL">Tout le match</option>
+                <option value="Q1">Q1</option>
+                <option value="Q2">Q2</option>
+                <option value="Q3">Q3</option>
+                <option value="Q4">Q4</option>
+            </select>
+        </div>
+        <div id="statsContent"></div>
+    </div>
+
+    <div id="view-coach" class="view-container">
+        <h2>Analyse & Conseils IA</h2>
+        <div id="coachContent">
+            </div>
     </div>
 
 <script>
-    // --- 1. CONFIGURATION & STATE ---
-    const CONFIG = {
-        courtWidth: 15, // mètres (largeur FIBA)
-        courtHeight: 28, // mètres (longueur FIBA)
-        hoopX: 7.5, // milieu largeur
-        hoopY: 1.575, // distance panier ligne de fond
-        threePointDist: 6.75 // distance 3pts
-    };
-
-    let GAME = {
-        id: Date.now(),
-        clock: 600, // secondes (10 min)
+    // --- CONFIGURATION ---
+    const STATE = {
+        quarter: "Q1",
+        time: 600,
         isRunning: false,
-        timer: null,
-        score: { h: 0, a: 0 },
+        timerInterval: null,
+        selectedPlayer: null, // { id: 1, team: 'home' }
         actions: [],
-        players: [
-            { id: 4, name: "Dupont", num: "4", active: true, fouls: 0, time: 0, lastSubTime: 0 },
-            { id: 5, name: "Martin", num: "5", active: true, fouls: 0, time: 0, lastSubTime: 0 },
-            { id: 6, name: "Lefebvre", num: "6", active: true, fouls: 0, time: 0, lastSubTime: 0 },
-            { id: 7, name: "Dubois", num: "7", active: true, fouls: 0, time: 0, lastSubTime: 0 },
-            { id: 8, name: "Moreau", num: "8", active: true, fouls: 0, time: 0, lastSubTime: 0 },
-            { id: 9, name: "Fournier", num: "9", active: false, fouls: 0, time: 0, lastSubTime: 0 },
-            { id: 10, name: "Girard", num: "10", active: false, fouls: 0, time: 0, lastSubTime: 0 },
+        homePlayers: [
+            {id: 1, num: "4", name: "Paul", stats: {pts:0, reb:0, ast:0, fouls:0}},
+            {id: 2, num: "5", name: "Lucas", stats: {pts:0, reb:0, ast:0, fouls:0}},
+            {id: 3, num: "6", name: "Theo", stats: {pts:0, reb:0, ast:0, fouls:0}},
+            {id: 4, num: "7", name: "Hugo", stats: {pts:0, reb:0, ast:0, fouls:0}},
+            {id: 5, num: "8", name: "Nico", stats: {pts:0, reb:0, ast:0, fouls:0}}
         ],
-        tempShot: null // Stocke les coordonnées du clic en cours
+        awayPlayers: [
+            {id: 11, num: "10", name: "Mike", stats: {pts:0, reb:0, ast:0, fouls:0}},
+            {id: 12, num: "12", name: "John", stats: {pts:0, reb:0, ast:0, fouls:0}},
+            {id: 13, num: "14", name: "Steve", stats: {pts:0, reb:0, ast:0, fouls:0}},
+            {id: 14, num: "23", name: "LeBron", stats: {pts:0, reb:0, ast:0, fouls:0}},
+            {id: 15, num: "30", name: "Steph", stats: {pts:0, reb:0, ast:0, fouls:0}}
+        ]
     };
 
-    // --- 2. INITIALISATION DU TERRAIN (CANVAS) ---
+    // --- INIT CANVAS ---
     const canvas = document.getElementById('courtCanvas');
     const ctx = canvas.getContext('2d');
-    
-    // Facteur d'échelle (Pixels par mètre)
-    let scale = canvas.width / CONFIG.courtWidth; 
+    const scale = canvas.width / 28; // Largeur terrain FIBA entier pour simplifier l'exemple, ou demi-terrain
 
     function drawCourt() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#d8ac84";
+        ctx.fillRect(0,0,canvas.width, canvas.height);
         
-        // Lignes simples
         ctx.strokeStyle = "white";
         ctx.lineWidth = 2;
         
-        // Panier
-        let hX = CONFIG.hoopX * scale;
-        let hY = CONFIG.hoopY * scale; // Panier bas (demi-terrain)
-        
-        // Zone 3pts (Arc)
+        // Demi-terrain gauche (Home basket)
         ctx.beginPath();
-        ctx.arc(hX, hY, CONFIG.threePointDist * scale, Math.PI, 0); // Demi cercle simplifié
+        ctx.arc(40, canvas.height/2, 15, 0, Math.PI*2); // Panier
         ctx.stroke();
-        
-        // Raquette (Simplifiée)
-        ctx.strokeRect((CONFIG.hoopX - 2.45) * scale, 0, 4.9 * scale, 5.8 * scale);
-        
-        // Cercle panier
+        ctx.strokeRect(0, canvas.height/2 - 60, 150, 120); // Raquette
         ctx.beginPath();
-        ctx.arc(hX, hY, 0.2 * scale, 0, Math.PI * 2);
-        ctx.strokeStyle = "orange";
+        ctx.arc(40, canvas.height/2, 180, -Math.PI/2, Math.PI/2); // 3pts (approx)
         ctx.stroke();
 
-        // Repères tirs
-        GAME.actions.forEach(a => {
-            if (a.type === 'shot') {
-                ctx.beginPath();
-                ctx.arc(a.x, a.y, 5, 0, Math.PI*2);
-                ctx.fillStyle = a.made ? '#00ff00' : '#ff0000';
-                ctx.fill();
-            }
+        // Demi-terrain droit (Away basket)
+        ctx.beginPath();
+        ctx.arc(canvas.width-40, canvas.height/2, 15, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.strokeRect(canvas.width-150, canvas.height/2 - 60, 150, 120);
+        ctx.beginPath();
+        ctx.arc(canvas.width-40, canvas.height/2, 180, Math.PI/2, -Math.PI/2);
+        ctx.stroke();
+        
+        // Ligne médiane
+        ctx.beginPath();
+        ctx.moveTo(canvas.width/2, 0);
+        ctx.lineTo(canvas.width/2, canvas.height);
+        ctx.stroke();
+
+        // Afficher les tirs
+        STATE.actions.filter(a => a.type === 'shot').forEach(a => {
+            ctx.beginPath();
+            ctx.arc(a.x, a.y, 5, 0, Math.PI*2);
+            ctx.fillStyle = a.made ? 'green' : 'red';
+            ctx.fill();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
         });
     }
 
-    // --- 3. LOGIQUE CLIC TERRAIN (MATHS) ---
+    // --- INTERACTION ---
+    
+    // 1. Sélection Joueur
+    function renderRosters() {
+        const hDiv = document.getElementById('rosterHome');
+        const aDiv = document.getElementById('rosterAway');
+        
+        // Garder les headers
+        hDiv.innerHTML = '<div class="team-header bg-home">DOMICILE</div>';
+        aDiv.innerHTML = '<div class="team-header bg-away">VISITEUR</div>';
+
+        const createCard = (p, team) => {
+            let div = document.createElement('div');
+            let isSel = STATE.selectedPlayer && STATE.selectedPlayer.id === p.id;
+            div.className = `player-card ${isSel ? 'selected' : ''}`;
+            div.onclick = () => selectPlayer(p, team);
+            div.innerHTML = `
+                <div class="p-info">
+                    <strong>#${p.num} ${p.name}</strong>
+                    <span class="p-stats-mini">${p.stats.pts}pts ${p.stats.fouls}ft</span>
+                </div>
+            `;
+            return div;
+        };
+
+        STATE.homePlayers.forEach(p => hDiv.appendChild(createCard(p, 'home')));
+        STATE.awayPlayers.forEach(p => aDiv.appendChild(createCard(p, 'away')));
+    }
+
+    function selectPlayer(player, team) {
+        STATE.selectedPlayer = { ...player, team: team };
+        renderRosters();
+    }
+
+    // 2. Click Terrain (Tir)
     canvas.addEventListener('mousedown', (e) => {
+        if (!STATE.selectedPlayer) return alert("Sélectionnez d'abord un joueur !");
+        
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // Conversion en mètres pour la logique
-        const realX = x / scale;
-        const realY = y / scale;
+        // Détection Zone simplifiée (basée sur distance du centre pour cet exemple visuel)
+        // En vrai: calculer distance panier gauche ou droite selon l'équipe
+        let points = 2;
+        // Logic simple: si loin du centre en X, c'est proche panier
+        // Si proche ligne médiane -> 3 pts. 
+        // Simplification pour prototype:
+        if (x > 180 && x < canvas.width - 180) points = 3; 
 
-        // Calcul distance panier (Pythagore)
-        const dist = Math.sqrt(Math.pow(realX - CONFIG.hoopX, 2) + Math.pow(realY - CONFIG.hoopY, 2));
+        // Confirmateur
+        let made = confirm(`Tir à ${points} points pour #${STATE.selectedPlayer.num} ?\nOK = Marqué\nAnnuler = Raté`);
         
-        const value = dist > CONFIG.threePointDist ? 3 : 2;
-
-        GAME.tempShot = { x, y, value };
-        openModal('shot', value);
+        addShot(points, made, x, y);
     });
 
-    // --- 4. GESTION DU MATCH & TEMPS ---
-    function toggleClock() {
-        if (GAME.isRunning) {
-            clearInterval(GAME.timer);
-            GAME.isRunning = false;
-            // Update play time for active players
-            updatePlayingTime();
-        } else {
-            GAME.isRunning = true;
-            // Set timestamp for play time tracking
-            const now = Date.now();
-            GAME.players.forEach(p => { if(p.active) p.lastSubTime = now; });
-            
-            GAME.timer = setInterval(() => {
-                if (GAME.clock > 0) {
-                    GAME.clock--;
-                    updateClockUI();
-                } else {
-                    toggleClock();
-                }
-            }, 1000);
-        }
-    }
-
-    function updatePlayingTime() {
-        // En vrai production, c'est plus complexe, ici simplifié
-        const now = Date.now();
-        GAME.players.forEach(p => {
-            if (p.active && GAME.isRunning) {
-                p.time += (now - p.lastSubTime) / 1000;
-                p.lastSubTime = now;
-            }
-        });
-        renderRoster(); // Rafraichir l'UI
-    }
-
-    function updateClockUI() {
-        let m = Math.floor(GAME.clock / 60).toString().padStart(2, '0');
-        let s = (GAME.clock % 60).toString().padStart(2, '0');
-        document.getElementById('clock').innerText = `${m}:${s}`;
-    }
-
-    // --- 5. LOGIQUE ACTIONS & STATS ---
-    function openModal(type, value = 0) {
-        document.getElementById('actionModal').style.display = 'flex';
-        const pList = document.getElementById('playerSelector');
-        pList.innerHTML = '';
-        
-        // Afficher seulement les 5 majeurs
-        GAME.players.filter(p => p.active).forEach(p => {
-            let btn = document.createElement('button');
-            btn.className = 'btn btn-blue';
-            btn.innerText = `#${p.num} ${p.name}`;
-            btn.onclick = () => selectPlayerForAction(p.id);
-            pList.appendChild(btn);
-        });
-
-        if (type === 'shot') {
-            document.getElementById('modalTitle').innerText = "Tir détecté";
-            document.getElementById('shotInfo').innerText = `Tentative à ${value} points`;
-            document.getElementById('shotActions').style.display = 'grid';
-            document.getElementById('otherActions').style.display = 'none';
-        } else {
-            document.getElementById('modalTitle').innerText = "Autre Statistique";
-            document.getElementById('shotInfo').innerText = "Choisir le joueur concerné";
-            document.getElementById('shotActions').style.display = 'none';
-            document.getElementById('otherActions').style.display = 'grid';
-        }
-    }
-
-    let selectedPlayerId = null;
-
-    function selectPlayerForAction(id) {
-        selectedPlayerId = id;
-        // Met en évidence le bouton sélectionné
-        const btns = document.getElementById('playerSelector').children;
-        for(let b of btns) b.style.opacity = '0.5';
-        event.target.style.opacity = '1';
-    }
-
-    function confirmShot(made) {
-        if (!selectedPlayerId) return alert("Sélectionnez un joueur !");
-        
-        const action = {
-            id: Date.now(),
-            timeStr: document.getElementById('clock').innerText,
+    // 3. Logique Actions
+    function addShot(val, made, x, y) {
+        recordAction({
             type: 'shot',
-            playerId: selectedPlayerId,
-            val: GAME.tempShot.value,
+            val: val,
             made: made,
-            x: GAME.tempShot.x,
-            y: GAME.tempShot.y
-        };
-
-        if (made) GAME.score.h += action.val;
-        
-        GAME.actions.unshift(action);
-        closeModal();
-        updateUI();
+            x: x, y: y
+        });
     }
 
-    function recordStat(type) {
-        // Pour les stats hors tirs (déclenchées par bouton manuel - à ajouter dans l'UI)
-        // Ici simplifié dans le workflow shot pour l'exemple, ou via bouton "Autre"
-        if (!selectedPlayerId) return alert("Sélectionnez un joueur !");
-        
-        const action = {
+    function addStat(type) {
+        if (!STATE.selectedPlayer) return alert("Sélectionnez d'abord un joueur !");
+        recordAction({ type: type });
+    }
+
+    function recordAction(data) {
+        const p = STATE.selectedPlayer;
+        // Update stats locales
+        const playerRef = p.team === 'home' 
+            ? STATE.homePlayers.find(x => x.id === p.id)
+            : STATE.awayPlayers.find(x => x.id === p.id);
+
+        // Score update
+        if (data.type === 'shot' && data.made) {
+            playerRef.stats.pts += data.val;
+            updateScore();
+        }
+        if (data.type === 'FOUL') playerRef.stats.fouls++;
+        if (data.type === 'REB_OFF' || data.type === 'REB_DEF') playerRef.stats.reb++;
+        if (data.type === 'AST') playerRef.stats.ast++;
+
+        // Save log
+        STATE.actions.unshift({
             id: Date.now(),
-            timeStr: document.getElementById('clock').innerText,
-            type: type,
-            playerId: selectedPlayerId
-        };
+            quarter: STATE.quarter,
+            time: document.getElementById('clock').innerText,
+            player: p,
+            ...data
+        });
 
-        // Gestion fautes
-        if (type === 'foul') {
-            let p = GAME.players.find(x => x.id === selectedPlayerId);
-            p.fouls++;
-            if (p.fouls >= 5) alert(`ATTENTION: ${p.name} a 5 fautes ! (Exclusion)`);
-        }
-
-        GAME.actions.unshift(action);
-        closeModal();
-        updateUI();
-    }
-
-    // --- 6. GESTION DES REMPLACEMENTS ---
-    function toggleSub(playerId) {
-        const player = GAME.players.find(p => p.id === playerId);
-        const activeCount = GAME.players.filter(p => p.active).length;
-
-        if (player.active) {
-            // Sortie
-            if (activeCount <= 1) return alert("Il faut au moins 1 joueur sur le terrain");
-            player.active = false;
-            // Ajouter event historique
-            GAME.actions.unshift({id:Date.now(), timeStr: document.getElementById('clock').innerText, type: 'sub_out', playerId: player.id});
-        } else {
-            // Entrée
-            if (activeCount >= 5) return alert("Déjà 5 joueurs ! Sortez-en un d'abord.");
-            player.active = true;
-            player.lastSubTime = Date.now();
-            GAME.actions.unshift({id:Date.now(), timeStr: document.getElementById('clock').innerText, type: 'sub_in', playerId: player.id});
-        }
-        updateUI();
-    }
-
-    // --- 7. UI RENDERING & LOGS ---
-    function deleteAction(id) {
-        if(!confirm("Supprimer cette action ?")) return;
-        const act = GAME.actions.find(a => a.id === id);
-        
-        // Revert Score
-        if (act.type === 'shot' && act.made) GAME.score.h -= act.val;
-        // Revert Faute
-        if (act.type === 'foul') {
-            GAME.players.find(p => p.id === act.playerId).fouls--;
-        }
-
-        GAME.actions = GAME.actions.filter(a => a.id !== id);
-        updateUI();
-    }
-
-    function updateUI() {
-        document.getElementById('scoreH').innerText = GAME.score.h;
-        renderRoster();
+        renderRosters();
         renderLog();
         drawCourt();
+        
+        // Reset selection pour forcer re-choix (évite erreur saisie)
+        STATE.selectedPlayer = null;
+        renderRosters();
     }
 
-    function renderRoster() {
-        const div = document.getElementById('players-list');
+    // --- UI UPDATES ---
+    function updateScore() {
+        let h = STATE.homePlayers.reduce((acc, p) => acc + p.stats.pts, 0);
+        let a = STATE.awayPlayers.reduce((acc, p) => acc + p.stats.pts, 0);
+        document.getElementById('scoreH').innerText = h;
+        document.getElementById('scoreA').innerText = a;
+    }
+
+    function renderLog() {
+        const div = document.getElementById('logList');
         div.innerHTML = '';
-        GAME.players.forEach(p => {
-            let row = document.createElement('div');
-            row.className = `player-row ${p.active ? 'active' : 'on-bench'}`;
+        STATE.actions.forEach(a => {
+            let txt = "";
+            if (a.type === 'shot') txt = `Tir ${a.val}pts ${a.made ? 'MARQUÉ' : 'RATÉ'}`;
+            else txt = a.type;
             
-            // Calcul minutes
-            let mins = Math.floor(p.time / 60);
-            let secs = Math.floor(p.time % 60);
-
-            // Points rouges pour fautes
-            let foulsDots = '';
-            for(let i=0; i<p.fouls; i++) foulsDots += '<span class="foul-dot"></span>';
-
+            let row = document.createElement('div');
+            row.className = 'log-row';
             row.innerHTML = `
-                <div>
-                    <strong>#${p.num} ${p.name}</strong><br>
-                    <small>${mins}m ${secs}s</small>
-                </div>
-                <div style="text-align:right">
-                    ${foulsDots}
-                    <button class="btn-sub" onclick="toggleSub(${p.id})">${p.active ? 'OUT' : 'IN'}</button>
-                </div>
+                <span>${a.time} [${a.quarter}]</span>
+                <span style="font-weight:bold; color:${a.player.team === 'home' ? 'var(--home-color)' : 'var(--away-color)'}">
+                    #${a.player.num} ${a.player.name}
+                </span>
+                <span>${txt}</span>
             `;
             div.appendChild(row);
         });
     }
 
-    function renderLog() {
-        const div = document.getElementById('log-entries');
-        div.innerHTML = '';
-        GAME.actions.forEach(a => {
-            const p = GAME.players.find(x => x.id === a.playerId);
-            let desc = "";
-            if (a.type === 'shot') desc = `Tir ${a.val}pts ${a.made ? 'MARQUÉ' : 'RATÉ'}`;
-            else if (a.type === 'foul') desc = "FAUTE P.";
-            else if (a.type === 'sub_in') desc = "ENTRÉE en jeu";
-            else if (a.type === 'sub_out') desc = "SORTIE de jeu";
-            else desc = a.type.toUpperCase();
+    function switchTab(tab) {
+        document.querySelectorAll('.view-container').forEach(d => d.classList.remove('active'));
+        document.getElementById('view-' + tab).classList.add('active');
+        
+        document.querySelectorAll('.nav-item').forEach(d => d.classList.remove('active'));
+        event.currentTarget.classList.add('active');
 
-            let el = document.createElement('div');
-            el.className = 'log-item';
-            el.innerHTML = `
-                <span>${a.timeStr} - #${p.num} ${p.name}: ${desc}</span>
-                <span class="btn-del" onclick="deleteAction(${a.id})">X</span>
-            `;
-            div.appendChild(el);
+        if(tab === 'stats') renderStatsTable();
+        if(tab === 'coach') generateAdvice();
+    }
+
+    // --- STATS TABLE ---
+    function renderStatsTable() {
+        const filter = document.getElementById('statPeriodFilter').value;
+        const container = document.getElementById('statsContent');
+        
+        let filteredActions = STATE.actions;
+        if (filter !== 'ALL') {
+            filteredActions = STATE.actions.filter(a => a.quarter === filter);
+        }
+
+        // Re-calculer les stats basées sur le filtre
+        // (Pour simplifier ici, je montre comment structurer, le calcul dynamique demanderait plus de code)
+        // On va afficher les stats globales actuelles pour l'exemple
+        
+        let html = `<h3>Domicile</h3><table><thead><tr><th>J</th><th>PTS</th><th>REB</th><th>AST</th><th>FTE</th></tr></thead><tbody>`;
+        STATE.homePlayers.forEach(p => {
+            html += `<tr><td>#${p.num}</td><td>${p.stats.pts}</td><td>${p.stats.reb}</td><td>${p.stats.ast}</td><td>${p.stats.fouls}</td></tr>`;
         });
+        html += `</tbody></table>`;
+        
+        html += `<h3>Visiteur</h3><table><thead><tr><th>J</th><th>PTS</th><th>REB</th><th>AST</th><th>FTE</th></tr></thead><tbody>`;
+        STATE.awayPlayers.forEach(p => {
+            html += `<tr><td>#${p.num}</td><td>${p.stats.pts}</td><td>${p.stats.reb}</td><td>${p.stats.ast}</td><td>${p.stats.fouls}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+
+        container.innerHTML = html;
     }
 
-    function closeModal() {
-        document.getElementById('actionModal').style.display = 'none';
-        GAME.tempShot = null;
-        selectedPlayerId = null;
+    // --- COACH IA (CONSEIL) ---
+    function generateAdvice() {
+        const div = document.getElementById('coachContent');
+        div.innerHTML = '';
+
+        const homeFouls = STATE.homePlayers.reduce((a,b)=>a+b.stats.fouls, 0);
+        const homePts = STATE.homePlayers.reduce((a,b)=>a+b.stats.pts, 0);
+        const awayPts = STATE.awayPlayers.reduce((a,b)=>a+b.stats.pts, 0);
+
+        const addCard = (title, text, type='') => {
+            div.innerHTML += `
+                <div class="advice-card ${type}">
+                    <span class="advice-title">${title}</span>
+                    ${text}
+                </div>`;
+        };
+
+        // 1. Analyse Score
+        if (homePts < awayPts) {
+            addCard("Retard au score", `Vous perdez de ${awayPts - homePts} points. Augmentez le rythme des possessions.`, "warning");
+        } else if (homePts > awayPts) {
+            addCard("Gestion de l'avance", "Continuez à jouer posé, ne forcez pas les tirs rapides.");
+        }
+
+        // 2. Analyse Fautes
+        if (homeFouls > 4) {
+            addCard("Discipline", "Attention ! L'équipe est en danger de fautes (Bonus adverse). Évitez les interceptions agressives.", "warning");
+        }
+
+        // 3. Analyse Joueurs
+        const topScorer = STATE.homePlayers.reduce((prev, current) => (prev.stats.pts > current.stats.pts) ? prev : current);
+        if (topScorer.stats.pts > 0) {
+            addCard("Homme du match", `Continuez d'alimenter #${topScorer.num} ${topScorer.name}, il est chaud (${topScorer.stats.pts} pts).`);
+        }
+
+        if (div.innerHTML === '') div.innerHTML = "Pas assez de données pour le moment.";
     }
 
-    // Ajout bouton manuel pour stats hors tirs
-    const manualBtn = document.createElement('button');
-    manualBtn.innerText = "+ Autres Stats (Reb/Passe/Faute)";
-    manualBtn.className = "btn btn-blue";
-    manualBtn.style.margin = "10px";
-    manualBtn.onclick = () => openModal('other');
-    document.querySelector('main').appendChild(manualBtn);
-
-
-    // --- 8. EXPORT HTML & SAUVEGARDE ---
-    function saveGame() {
-        localStorage.setItem('myBasketGame', JSON.stringify(GAME));
-        alert("Match sauvegardé dans le navigateur !");
-    }
-
-    function loadGame() {
-        const saved = localStorage.getItem('myBasketGame');
-        if (saved) {
-            GAME = JSON.parse(saved);
-            updateUI();
-            alert("Match chargé !");
+    // --- CHRONO ---
+    function toggleClock() {
+        if (STATE.isRunning) {
+            clearInterval(STATE.timerInterval);
+            STATE.isRunning = false;
+        } else {
+            STATE.isRunning = true;
+            STATE.timerInterval = setInterval(() => {
+                if (STATE.time > 0) {
+                    STATE.time--;
+                    let m = Math.floor(STATE.time / 60).toString().padStart(2, '0');
+                    let s = (STATE.time % 60).toString().padStart(2, '0');
+                    document.getElementById('clock').innerText = `${m}:${s}`;
+                }
+            }, 1000);
         }
     }
-
-    function exportToHTML() {
-        // Crée une table HTML simple
-        let html = `<html><head><title>Rapport Match</title></head><body>`;
-        html += `<h1>Rapport de Match - Score: ${GAME.score.h} - ${GAME.score.a}</h1>`;
-        html += `<table border="1" cellpadding="5"><thead><tr><th>Temps</th><th>Joueur</th><th>Action</th></tr></thead><tbody>`;
-        
-        GAME.actions.forEach(a => {
-            const p = GAME.players.find(x => x.id === a.playerId);
-            let desc = a.type === 'shot' ? `Tir ${a.val}pts ${a.made ? 'OK' : 'KO'}` : a.type;
-            html += `<tr><td>${a.timeStr}</td><td>#${p.num} ${p.name}</td><td>${desc}</td></tr>`;
-        });
-        
-        html += `</tbody></table></body></html>`;
-
-        const blob = new Blob([html], {type: 'text/html'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `match_export_${Date.now()}.html`;
-        a.click();
+    
+    function changePeriod() {
+        STATE.quarter = document.getElementById('quarterSelect').value;
+        // Reset chrono logique FIBA (10 min)
+        STATE.time = 600; 
+        document.getElementById('clock').innerText = "10:00";
+        alert("Début de la période : " + STATE.quarter);
     }
 
     // Init
     drawCourt();
-    renderRoster();
-    // Tentative de chargement auto
-    if(localStorage.getItem('myBasketGame')) {
-        if(confirm("Match précédent trouvé. Le charger ?")) loadGame();
-    }
-
+    renderRosters();
 </script>
 </body>
 </html>

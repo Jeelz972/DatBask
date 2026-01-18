@@ -989,6 +989,107 @@ const GameEngine = {
     editAction(idx) {
         const action = State.actions[idx], player = State.players[action.playerId];
         const allPlayers = Object.values(State.players);
-        const types = ['SHOT', 'OREB', 'DREB', 'STL', 'BLK', 'TOV', 'FOUL'];
+        const types = [{ v: 'SHOT', l: '🏀 Tir' }, { v: 'OREB', l: '🔄 Reb Off' }, { v: 'DREB', l: '🛡️ Reb Def' }, { v: 'STL', l: '⚡ Intercept' }, { v: 'BLK', l: '✋ Contre' }, { v: 'TOV', l: '💨 Perte' }, { v: 'FOUL', l: '🚨 Faute' }];
         let html = `
-            <label class
+            <label class="modal-label">Joueur</label>
+            <select class="modal-select" id="editPlayer">${allPlayers.map(p => `<option value="${p.id}" ${p.id === action.playerId ? 'selected' : ''}>#${p.number} ${p.name}</option>`).join('')}</select>
+            <label class="modal-label">Type d'action</label>
+            <select class="modal-select" id="editType">${types.map(t => `<option value="${t.v}" ${t.v === action.type ? 'selected' : ''}>${t.l}</option>`).join('')}</select>
+        `;
+        UI.showModal('✏️ Modifier Action', `#${player.number} ${player.name}`, html,
+            [{ text: '🗑️ Suppr', class: 'danger', action: `GameEngine.deleteAction(${idx})` },
+             { text: 'Annuler', class: 'secondary', action: 'UI.closeModal()' },
+             { text: '✓ Sauver', class: 'primary', action: `GameEngine.saveActionEdit(${idx})` }], 'grid-3', 'purple');
+    },
+    saveActionEdit(idx) {
+        const newPlayerId = parseInt(document.getElementById('editPlayer').value);
+        const newType = document.getElementById('editType').value;
+        State.actions[idx].playerId = newPlayerId;
+        State.actions[idx].type = newType;
+        State.recalculateAllStats();
+        UI.closeModal(); UI.renderPlayByPlay(); UI.renderRosters(); UI.updateScoreboard(); Court.draw(); UI.toast('Action modifiée');
+    },
+    deleteAction(idx) {
+        State.actions.splice(idx, 1); State.recalculateAllStats();
+        UI.closeModal(); UI.renderPlayByPlay(); UI.renderRosters(); UI.updateScoreboard(); Court.draw(); UI.toast('Action supprimée');
+    },
+    editPlayerMinutes(playerId) {
+        const p = State.players[playerId], mins = Math.floor(p.stats.minutes / 60), secs = p.stats.minutes % 60;
+        UI.showModal('⏱️ Temps de jeu', `#${p.number} ${p.name}`,
+            `<input type="text" class="modal-input" id="minutesInput" value="${mins}:${secs.toString().padStart(2, '0')}">`,
+            [{ text: 'Annuler', action: 'UI.closeModal()', class: 'secondary' }, { text: 'OK', action: `GameEngine.applyMinutesEdit(${playerId})`, class: 'primary' }], 'grid-2');
+    },
+    applyMinutesEdit(playerId) {
+        const match = document.getElementById('minutesInput').value.match(/(\d{1,2}):(\d{2})/);
+        if (!match) { UI.toast('Format MM:SS', 'error'); return; }
+        State.players[playerId].stats.minutes = parseInt(match[1]) * 60 + parseInt(match[2]);
+        UI.closeModal(); UI.renderRosters(); UI.renderBoxScore(); UI.toast('Modifié');
+    },
+
+    undo() {
+        if (State.actions.length === 0) { UI.toast('Rien à annuler', 'error'); return; }
+        State.actions.pop(); State.recalculateAllStats();
+        UI.renderRosters(); UI.updateScoreboard(); Court.draw(); UI.toast('Annulé');
+    },
+    exportData() {
+        const playerStats = {};
+        Object.values(State.players).filter(p => p.team === 'home').forEach(p => {
+            playerStats[p.id] = { pts: p.stats.pts, reb: p.stats.oreb + p.stats.dreb, oreb: p.stats.oreb, dreb: p.stats.dreb, ast: p.stats.ast, stl: p.stats.stl, blk: p.stats.blk, tov: p.stats.tov, pf: p.stats.fouls, fgm: p.stats.fgm, fga: p.stats.fga, threePM: p.stats.fg3m, threePA: p.stats.fg3a, ftm: p.stats.ftm, fta: p.stats.fta, minutes: Math.round(p.stats.minutes / 60), plusMinus: State.calculatePlusMinus(p.id) };
+        });
+        const scores = State.getRunningScore();
+        const data = { id: Date.now().toString(36), date: State.match.date, opponent: State.match.opponent, homeScore: scores.home, awayScore: scores.away, phase: 'phase1', playerStats, actions: State.actions };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `match_${data.date.replace(/\//g, '-')}_vs_${data.opponent}.json`; a.click();
+        UI.toast('Exporté !');
+    }
+};
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    // Recording mode
+    if (State.ui.recordingShortcut) {
+        e.preventDefault();
+        const key = e.key.toLowerCase();
+        State.shortcuts[State.ui.recordingShortcut] = key;
+        document.querySelectorAll('.shortcut-key').forEach(el => el.classList.remove('recording'));
+        Setup.renderShortcuts();
+        Setup.updateShortcutLabels();
+        State.ui.recordingShortcut = null;
+        return;
+    }
+
+    // Don't trigger if in input
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    if (document.getElementById('modalBackdrop').classList.contains('active')) return;
+    if (!document.getElementById('app').style.display || document.getElementById('app').style.display === 'none') return;
+
+    const key = e.key.toLowerCase();
+    const actions = {
+        [State.shortcuts.OREB]: () => GameEngine.action('OREB'),
+        [State.shortcuts.DREB]: () => GameEngine.action('DREB'),
+        [State.shortcuts.AST]: () => GameEngine.startAssistWorkflow(),
+        [State.shortcuts.STL]: () => GameEngine.startStealWorkflow(),
+        [State.shortcuts.FOUL]: () => GameEngine.startFoulWizard(),
+        [State.shortcuts.TOV]: () => GameEngine.action('TOV'),
+        [State.shortcuts.BLK]: () => GameEngine.action('BLK'),
+        [State.shortcuts.BLKR]: () => GameEngine.initBlockReceived(),
+        [State.shortcuts.SUB]: () => GameEngine.startSubstitution(),
+        [State.shortcuts.UNDO]: () => GameEngine.undo(),
+        [State.shortcuts.TIMER]: () => GameEngine.toggleTimer()
+    };
+    if (actions[key]) { e.preventDefault(); actions[key](); }
+
+    // Number keys for player selection
+    if (/^[1-9]$/.test(e.key)) {
+        const players = Object.values(State.players).filter(p => p.team === 'home');
+        const idx = parseInt(e.key) - 1;
+        if (players[idx]) GameEngine.handlePlayerClick(players[idx].id);
+    }
+});
+
+// Init
+document.addEventListener('DOMContentLoaded', () => Setup.init());
+</script>
+</body>
+</html>

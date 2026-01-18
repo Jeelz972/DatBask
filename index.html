@@ -3,404 +3,862 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Basket Stats V4 - Gestion Fautes Avancée</title>
+    <title>🏀 Basket Stats Pro V5.2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #007bff; --danger: #dc3545; --dark: #222; --light: #f8f9fa; --court: #d19a6a; --success: #28a745; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--dark); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        :root {
+            --bg-primary: #0a0a0f; --bg-secondary: #12121a; --bg-card: #1a1a24; --bg-elevated: #222230;
+            --accent: #f97316; --accent-glow: rgba(249, 115, 22, 0.4);
+            --success: #22c55e; --danger: #ef4444; --warning: #eab308; --info: #3b82f6; --purple: #a855f7;
+            --text-primary: #f8fafc; --text-secondary: #94a3b8; --text-muted: #64748b;
+            --border: #2d2d3a; --court: #c4956a;
+            --home-color: #3b82f6; --away-color: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); height: 100dvh; overflow: hidden; user-select: none; -webkit-user-select: none; }
 
-        /* --- UI GENERALE (Similaire V3) --- */
-        #match-screen { display: flex; flex-direction: column; height: 100%; }
-        
-        /* Scoreboard */
-        .scoreboard { background: #111; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; height: 50px; }
-        .score-display { font-size: 1.5rem; font-weight: bold; }
-        .timer-box { font-family: monospace; font-size: 1.8rem; color: #ffc107; cursor: pointer; border: 1px solid #555; padding: 0 10px; border-radius: 4px; }
-        
-        /* Rosters */
-        .roster-strip { background: #333; padding: 5px; overflow-x: auto; white-space: nowrap; height: 60px; display: flex; align-items: center; }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px var(--accent-glow); } 50% { box-shadow: 0 0 40px var(--accent-glow); } }
+        @keyframes slide-up { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scale-in { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes score-pop { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        #app { height: 100%; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+        .scoreboard { background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%); padding: 6px 12px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); z-index: 10; }
+        .team-info { display: flex; align-items: center; gap: 8px; }
+        .team-info.away { flex-direction: row-reverse; text-align: right; }
+        .team-badge { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.65rem; text-transform: uppercase; }
+        .team-badge.home { background: linear-gradient(135deg, var(--home-color), #1d4ed8); }
+        .team-badge.away { background: linear-gradient(135deg, var(--away-color), #b91c1c); }
+        .team-name { font-size: 0.65rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
+        .score-center { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .score-display { display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; }
+        .score { font-size: 1.8rem; font-weight: 900; min-width: 45px; text-align: center; transition: transform 0.2s; }
+        .score.home { color: var(--home-color); }
+        .score.away { color: var(--away-color); }
+        .score.pop { animation: score-pop 0.3s ease; }
+        .score-separator { font-size: 1.2rem; color: var(--text-muted); }
+        .game-info { display: flex; align-items: center; gap: 6px; }
+        .quarter-badge { background: var(--accent); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.6rem; font-weight: 700; cursor: pointer; }
+        .timer { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 700; padding: 3px 10px; border-radius: 6px; background: var(--bg-card); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; color: var(--warning); }
+        .timer.running { color: var(--success); border-color: var(--success); animation: pulse-glow 2s infinite; --accent-glow: rgba(34, 197, 94, 0.3); }
+
+        .tabs-bar { display: flex; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 8px; border: none; background: none; color: var(--text-muted); font-family: inherit; font-size: 0.7rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg-card); }
+        .tab-btn .icon { font-size: 1rem; display: block; margin-bottom: 2px; }
+
+        .tab-content { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+        .tab-content.active { display: flex; }
+
+        .roster-container { background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .roster-container.away { border-bottom: none; border-top: 1px solid var(--border); }
+        .roster-label { font-size: 0.55rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); padding: 4px 12px 0; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+        .oncourt-count { color: var(--success); }
+        .oncourt-count.warning { color: var(--warning); }
+        .oncourt-count.error { color: var(--danger); }
+        .roster-strip { display: flex; gap: 6px; padding: 6px 10px; overflow-x: auto; scroll-behavior: smooth; }
         .roster-strip::-webkit-scrollbar { display: none; }
-        .p-chip { display: inline-block; background: #555; color: white; padding: 5px 10px; border-radius: 20px; margin-right: 8px; min-width: 50px; text-align: center; cursor: pointer; border: 2px solid transparent; }
-        .p-chip.selected { background: #fff; color: black; border-color: var(--primary); font-weight: bold; transform: scale(1.05); }
-        .p-chip small { display: block; font-size: 0.65rem; opacity: 0.8; }
 
-        /* Terrain */
-        .court-container { flex: 1; position: relative; background: #222; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        canvas { background: var(--court); border: 2px solid white; }
-        .overlay-msg { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 20px; font-size: 0.9rem; pointer-events: none; opacity: 0; transition: 0.3s; z-index: 10; }
-        .overlay-msg.visible { opacity: 1; }
+        .player-chip { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 6px 10px; min-width: 60px; background: var(--bg-card); border: 2px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+        .player-chip.selected { border-color: var(--accent); background: linear-gradient(135deg, var(--bg-elevated), var(--bg-card)); transform: scale(1.05); box-shadow: 0 4px 15px var(--accent-glow); }
+        .player-chip.oncourt { border-color: var(--success); background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), var(--bg-card)); }
+        .player-chip.oncourt::before { content: '▶'; position: absolute; top: 2px; left: 4px; font-size: 0.5rem; color: var(--success); }
+        .player-chip.home.selected { border-color: var(--home-color); }
+        .player-chip.away.selected { border-color: var(--away-color); }
+        .player-number { font-size: 1rem; font-weight: 800; color: var(--text-primary); }
+        .player-name { font-size: 0.55rem; color: var(--text-secondary); margin-top: 1px; max-width: 55px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .player-mini-stats { display: flex; gap: 4px; margin-top: 3px; font-size: 0.55rem; font-weight: 600; }
+        .player-mini-stats .pts { color: var(--accent); }
+        .player-mini-stats .min { color: var(--text-muted); }
+        .foul-indicator { position: absolute; top: 2px; right: 3px; display: flex; gap: 1px; }
+        .foul-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--danger); }
 
-        /* Actions Grid */
-        .controls-area { background: #fff; padding: 5px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; height: 140px; }
-        .btn-act { border: none; border-radius: 4px; font-weight: bold; font-size: 0.8rem; color: white; cursor: pointer; padding: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .btn-act:active { filter: brightness(0.8); }
-        .bg-reb { background: #6c5ce7; } .bg-ast { background: #00b894; } .bg-flt { background: #d63031; } .bg-blk { background: #2d3436; } .bg-oth { background: #fdcb6e; color: #333; }
+        .court-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; background: radial-gradient(ellipse at center, var(--bg-secondary) 0%, var(--bg-primary) 100%); position: relative; overflow: hidden; min-height: 160px; }
+        .court-canvas { border-radius: 6px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); cursor: crosshair; max-width: 95%; max-height: 100%; }
+        .court-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); padding: 12px 24px; border-radius: 12px; border: 1px solid var(--accent); font-weight: 600; font-size: 0.85rem; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 20; }
+        .court-overlay.visible { opacity: 1; animation: float 2s ease-in-out infinite; }
+        .court-overlay .icon { font-size: 1.2rem; margin-bottom: 6px; }
 
-        /* --- MODAL WIZARD (NOUVEAU) --- */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; }
-        .modal-box { background: white; color: #333; width: 90%; max-width: 400px; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .modal-title { font-size: 1.4rem; font-weight: bold; margin-bottom: 20px; color: var(--primary); }
-        .modal-btns { display: grid; gap: 10px; }
-        .modal-btns.cols-2 { grid-template-columns: 1fr 1fr; }
-        .btn-wizard { padding: 15px; font-size: 1.1rem; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
-        .btn-yes { background: var(--success); }
-        .btn-no { background: var(--danger); }
-        .btn-opt { background: var(--primary); }
-        
+        .actions-panel { background: linear-gradient(0deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); padding: 6px; border-top: 1px solid var(--border); }
+        .actions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; max-width: 450px; margin: 0 auto; }
+        .action-btn { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 2px; border: none; border-radius: 10px; font-family: inherit; font-weight: 700; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.2px; cursor: pointer; transition: all 0.15s; overflow: hidden; color: white; min-height: 46px; }
+        .action-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%); pointer-events: none; }
+        .action-btn:active { transform: scale(0.95); filter: brightness(0.85); }
+        .action-btn .icon { font-size: 0.95rem; margin-bottom: 1px; }
+        .btn-rebound { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .btn-assist { background: linear-gradient(135deg, #10b981, #059669); }
+        .btn-steal { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .btn-block { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        .btn-foul { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .btn-turnover { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .btn-special { background: linear-gradient(135deg, #64748b, #475569); }
+        .btn-sub { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .action-btn.span-2 { grid-column: span 2; }
+
+        .boxscore-container { flex: 1; overflow-y: auto; padding: 10px; }
+        .boxscore-section { margin-bottom: 16px; }
+        .boxscore-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; padding-left: 4px; display: flex; align-items: center; gap: 6px; }
+        .boxscore-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .boxscore-title .dot.home { background: var(--home-color); }
+        .boxscore-title .dot.away { background: var(--away-color); }
+        .boxscore-table { width: 100%; border-collapse: collapse; font-size: 0.65rem; }
+        .boxscore-table th, .boxscore-table td { padding: 6px 4px; text-align: center; border-bottom: 1px solid var(--border); }
+        .boxscore-table th { background: var(--bg-elevated); color: var(--text-muted); font-weight: 600; font-size: 0.55rem; text-transform: uppercase; position: sticky; top: 0; z-index: 5; }
+        .boxscore-table td { background: var(--bg-card); }
+        .boxscore-table .player-cell { text-align: left; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
+        .boxscore-table .highlight { color: var(--accent); font-weight: 700; }
+        .boxscore-table .plus { color: var(--success); }
+        .boxscore-table .minus { color: var(--danger); }
+        .boxscore-table .min-cell { cursor: pointer; color: var(--info); text-decoration: underline; }
+
+        .pbp-container { flex: 1; overflow-y: auto; padding: 10px; }
+        .pbp-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; }
+        .pbp-item:hover { border-color: var(--accent); background: var(--bg-elevated); }
+        .pbp-item.home { border-left: 3px solid var(--home-color); }
+        .pbp-item.away { border-left: 3px solid var(--away-color); }
+        .pbp-time { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 600; color: var(--text-muted); min-width: 45px; }
+        .pbp-quarter { font-size: 0.5rem; color: var(--text-muted); }
+        .pbp-icon { font-size: 1.2rem; }
+        .pbp-details { flex: 1; }
+        .pbp-player { font-weight: 700; font-size: 0.8rem; color: var(--text-primary); }
+        .pbp-action { font-size: 0.7rem; color: var(--text-secondary); }
+        .pbp-score { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: var(--bg-elevated); }
+        .pbp-empty { text-align: center; color: var(--text-muted); padding: 40px; font-size: 0.85rem; }
+
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 100; display: none; justify-content: center; align-items: center; padding: 16px; animation: fade-in 0.2s ease; }
+        .modal-backdrop.active { display: flex; }
+        .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 360px; overflow: hidden; animation: scale-in 0.25s; box-shadow: 0 25px 50px rgba(0,0,0,0.5); max-height: 90vh; display: flex; flex-direction: column; }
+        .modal-header { background: linear-gradient(135deg, var(--accent), #ea580c); padding: 14px 18px; text-align: center; }
+        .modal-header.blue { background: linear-gradient(135deg, var(--info), #1d4ed8); }
+        .modal-header.green { background: linear-gradient(135deg, var(--success), #16a34a); }
+        .modal-header.yellow { background: linear-gradient(135deg, var(--warning), #ca8a04); }
+        .modal-title { font-size: 1rem; font-weight: 700; color: white; }
+        .modal-subtitle { font-size: 0.7rem; color: rgba(255,255,255,0.8); margin-top: 2px; }
+        .modal-body { padding: 16px; overflow-y: auto; flex: 1; }
+        .modal-actions { display: flex; flex-direction: column; gap: 8px; }
+        .modal-actions.grid-2 { display: grid; grid-template-columns: 1fr 1fr; }
+        .modal-actions.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+        .modal-actions.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; }
+        .modal-btn { padding: 12px 16px; border: none; border-radius: 10px; font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.15s; color: white; }
+        .modal-btn:active { transform: scale(0.97); }
+        .modal-btn.primary { background: linear-gradient(135deg, var(--success), #16a34a); }
+        .modal-btn.danger { background: linear-gradient(135deg, var(--danger), #dc2626); }
+        .modal-btn.secondary { background: var(--bg-elevated); border: 1px solid var(--border); }
+        .modal-btn.info { background: linear-gradient(135deg, var(--info), #2563eb); }
+        .modal-btn.warning { background: linear-gradient(135deg, var(--warning), #ca8a04); }
+        .modal-btn.purple { background: linear-gradient(135deg, var(--purple), #7c3aed); }
+        .modal-input { width: 100%; padding: 12px; margin-bottom: 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; text-align: center; }
+        .modal-input:focus { outline: none; border-color: var(--accent); }
+        .modal-label { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px; display: block; }
+
+        .player-select-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+        .player-select-btn { padding: 12px 8px; background: var(--bg-elevated); border: 2px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .player-select-btn:hover { border-color: var(--accent); }
+        .player-select-btn.home:hover { border-color: var(--home-color); }
+        .player-select-btn.away:hover { border-color: var(--away-color); }
+        .player-select-btn .num { font-size: 1.2rem; font-weight: 800; }
+        .player-select-btn .name { font-size: 0.65rem; color: var(--text-secondary); margin-top: 2px; }
+        .player-select-btn.home .num { color: var(--home-color); }
+        .player-select-btn.away .num { color: var(--away-color); }
+
+        .shot-popup { position: fixed; bottom: 180px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 50; animation: slide-up 0.25s ease; }
+        .shot-popup.active { display: flex; }
+        .shot-popup-btn { padding: 14px 24px; border: none; border-radius: 14px; font-family: inherit; font-size: 0.95rem; font-weight: 800; cursor: pointer; color: white; box-shadow: 0 8px 25px rgba(0,0,0,0.4); transition: transform 0.15s; }
+        .shot-popup-btn:active { transform: scale(0.95); }
+        .shot-popup-btn.made { background: linear-gradient(135deg, var(--success), #16a34a); }
+        .shot-popup-btn.missed { background: linear-gradient(135deg, var(--danger), #dc2626); }
+
+        .toast-container { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+        .toast { background: var(--bg-elevated); border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; box-shadow: 0 8px 25px rgba(0,0,0,0.4); animation: slide-up 0.3s ease; display: flex; align-items: center; gap: 6px; }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        .toast .icon { font-size: 1rem; }
+
+        .sub-helper { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: var(--info); color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: none; animation: blink 1s infinite; z-index: 15; }
+        .sub-helper.active { display: block; }
+
+        .oncourt-bar { background: var(--bg-card); padding: 6px 10px; display: flex; align-items: center; justify-content: center; gap: 12px; border-bottom: 1px solid var(--border); font-size: 0.6rem; }
+        .oncourt-team { display: flex; align-items: center; gap: 6px; }
+        .oncourt-team .label { font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 0.55rem; }
+        .oncourt-team.home .label { background: var(--home-color); }
+        .oncourt-team.away .label { background: var(--away-color); }
+        .oncourt-team .players { display: flex; gap: 3px; }
+        .oncourt-team .player-tag { background: var(--bg-elevated); color: var(--text-primary); padding: 2px 6px; border-radius: 6px; font-weight: 700; font-size: 0.6rem; }
+        .oncourt-team.home .player-tag { border: 1px solid var(--home-color); }
+        .oncourt-team.away .player-tag { border: 1px solid var(--away-color); }
+        .oncourt-vs { color: var(--text-muted); font-weight: 600; }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
     </style>
 </head>
 <body>
 
-    <div id="match-screen">
-        <div class="scoreboard">
-            <div style="color:var(--primary)">HOME</div>
+<div id="app">
+    <header class="scoreboard">
+        <div class="team-info home">
+            <div class="team-badge home" id="homeBadge">DOM</div>
+            <span class="team-name" id="homeLabel">Domicile</span>
+        </div>
+        <div class="score-center">
             <div class="score-display">
-                <span id="scoreH" style="color:var(--primary)">0</span> - <span id="scoreA" style="color:var(--danger)">0</span>
+                <span class="score home" id="scoreHome">0</span>
+                <span class="score-separator">-</span>
+                <span class="score away" id="scoreAway">0</span>
             </div>
-            <div style="color:var(--danger)">AWAY</div>
-            <div class="timer-box" id="clock" onclick="toggleClock()">10:00</div>
+            <div class="game-info">
+                <span class="quarter-badge" id="quarterBadge" onclick="GameEngine.showQuarterModal()">Q1</span>
+                <button class="timer" id="timerBtn" onclick="GameEngine.toggleTimer()">10:00</button>
+                <button class="timer" style="font-size:0.7rem; padding: 3px 6px;" onclick="GameEngine.showTimerEditModal()">✏️</button>
+            </div>
+        </div>
+        <div class="team-info away">
+            <div class="team-badge away" id="awayBadge">EXT</div>
+            <span class="team-name" id="awayLabel">Extérieur</span>
+        </div>
+    </header>
+
+    <div class="tabs-bar">
+        <button class="tab-btn active" data-tab="live" onclick="UI.switchTab('live')"><span class="icon">🏀</span>Live</button>
+        <button class="tab-btn" data-tab="boxscore" onclick="UI.switchTab('boxscore')"><span class="icon">📊</span>Stats</button>
+        <button class="tab-btn" data-tab="pbp" onclick="UI.switchTab('pbp')"><span class="icon">📝</span>Play-by-Play</button>
+    </div>
+
+    <div class="tab-content active" id="tab-live">
+        <div class="oncourt-bar">
+            <div class="oncourt-team home">
+                <span class="label">🏠</span>
+                <div class="players" id="oncourtHome"></div>
+            </div>
+            <span class="oncourt-vs">VS</span>
+            <div class="oncourt-team away">
+                <div class="players" id="oncourtAway"></div>
+                <span class="label">✈️</span>
+            </div>
         </div>
 
-        <div class="roster-strip" id="stripHome"></div>
-
-        <div class="court-container">
-            <div id="msgOverlay" class="overlay-msg">Instructions ici</div>
-            <canvas id="courtCanvas"></canvas>
+        <div class="roster-container home">
+            <div class="roster-label"><span>🏠 Domicile</span><span class="oncourt-count" id="homeOncourtCount">0/5</span></div>
+            <div class="roster-strip" id="rosterHome"></div>
         </div>
 
-        <div class="roster-strip" id="stripAway"></div>
+        <div class="court-wrapper">
+            <canvas id="courtCanvas" class="court-canvas"></canvas>
+            <div class="court-overlay" id="courtOverlay"><div class="icon">🎯</div><div>Cliquez sur le terrain</div></div>
+            <div class="sub-helper" id="subHelper">Sélectionnez le joueur entrant</div>
+        </div>
 
-        <div class="controls-area">
-            <button class="btn-act bg-reb" onclick="doSimpleStat('REB_OFF')">REB<br>OFF</button>
-            <button class="btn-act bg-reb" onclick="doSimpleStat('REB_DEF')">REB<br>DEF</button>
-            <button class="btn-act bg-ast" onclick="doSimpleStat('AST')">PASSE<br>DÉ</button>
-            <button class="btn-act bg-oth" onclick="doSimpleStat('STL')">INTER<br>CEPT</button>
-            
-            <button class="btn-act bg-flt" onclick="startFoulProcess()">FAUTE<br>(Wizard)</button>
-            
-            <button class="btn-act bg-ast" onclick="doSimpleStat('FOUL_DRAWN')">FTE<br>PROV.</button>
-            <button class="btn-act bg-blk" onclick="doSimpleStat('BLK')">CONTRE<br>(Block)</button>
-            <button class="btn-act bg-blk" style="background:#555" onclick="initBlockReceived()">CONTRE<br>SUBI</button>
+        <div class="roster-container away">
+            <div class="roster-label"><span>✈️ Extérieur</span><span class="oncourt-count" id="awayOncourtCount">0/5</span></div>
+            <div class="roster-strip" id="rosterAway"></div>
+        </div>
 
-            <button class="btn-act" style="background:#444; grid-column: span 2;" onclick="undoLast()">ANNULER</button>
-            <button class="btn-act" style="background:#0984e3; grid-column: span 2;" onclick="exportCSV()">EXPORTER</button>
+        <div class="actions-panel">
+            <div class="actions-grid">
+                <button class="action-btn btn-rebound" onclick="GameEngine.action('OREB')"><span class="icon">🔄</span>Reb O</button>
+                <button class="action-btn btn-rebound" onclick="GameEngine.action('DREB')"><span class="icon">🛡️</span>Reb D</button>
+                <button class="action-btn btn-assist" onclick="GameEngine.startAssistWorkflow()"><span class="icon">🎯</span>Passe D</button>
+                <button class="action-btn btn-steal" onclick="GameEngine.startStealWorkflow()"><span class="icon">⚡</span>Intrcpt</button>
+                <button class="action-btn btn-foul" onclick="GameEngine.startFoulWizard()"><span class="icon">🚨</span>Faute</button>
+                <button class="action-btn btn-turnover" onclick="GameEngine.action('TOV')"><span class="icon">💨</span>Perte</button>
+                <button class="action-btn btn-block" onclick="GameEngine.action('BLK')"><span class="icon">✋</span>Contre</button>
+                <button class="action-btn btn-special" onclick="GameEngine.initBlockReceived()"><span class="icon">❌</span>Ctr Subi</button>
+                <button class="action-btn btn-sub span-2" onclick="GameEngine.startSubstitution()"><span class="icon">🔁</span>Remplacement</button>
+                <button class="action-btn btn-special span-2" onclick="GameEngine.undo()"><span class="icon">↩️</span>Annuler</button>
+            </div>
         </div>
     </div>
 
-    <div id="wizardModal" class="modal-overlay">
-        <div class="modal-box">
-            <div id="wizTitle" class="modal-title">Titre</div>
-            <div id="wizContent" class="modal-btns">
-                </div>
+    <div class="tab-content" id="tab-boxscore">
+        <div class="boxscore-container" id="boxscoreContent"></div>
+    </div>
+
+    <div class="tab-content" id="tab-pbp">
+        <div class="pbp-container" id="pbpContent"></div>
+    </div>
+</div>
+
+<div class="shot-popup" id="shotPopup">
+    <button class="shot-popup-btn made" onclick="GameEngine.confirmShot(true)">✓ Marqué</button>
+    <button class="shot-popup-btn missed" onclick="GameEngine.confirmShot(false)">✗ Raté</button>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop" onclick="UI.closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header" id="modalHeader">
+            <div class="modal-title" id="modalTitle">Titre</div>
+            <div class="modal-subtitle" id="modalSubtitle"></div>
+        </div>
+        <div class="modal-body">
+            <div id="modalBody"></div>
+            <div class="modal-actions" id="modalActions"></div>
         </div>
     </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
 
 <script>
-    // --- 1. CONFIGURATION & STATE ---
-    const STATE = {
-        players: [], 
-        actions: [],
-        selectedPlayerId: null,
-        clock: 600, isRunning: false, timerInt: null,
-        pendingAction: null, // 'BLOCK_RECEIVED', 'FOUL_LOC'
-        foulContext: {} // Stocke les données durant le wizard de faute
-    };
+const State = {
+    match: { id: null, date: null, homeTeam: { name: 'Domicile', abbr: 'DOM' }, awayTeam: { name: 'Extérieur', abbr: 'EXT' }, quarter: 1, time: 600, isRunning: false, quarterDuration: 600 },
+    players: {},
+    actions: [],
+    onCourt: { home: [], away: [] },
+    ui: { selectedPlayerId: null, pendingAction: null, foulContext: {}, pendingShot: null, subMode: null, assistContext: {}, stealContext: {} },
 
-    const CANVAS_WIDTH = 360; 
-    const CANVAS_HEIGHT = 250;
+    getRunningScore() {
+        let home = 0, away = 0;
+        this.actions.forEach(a => {
+            if (a.type === 'SHOT' && a.made) {
+                const p = this.players[a.playerId];
+                if (p.team === 'home') home += a.value; else away += a.value;
+            }
+            if (a.type === 'FOUL' && a.ftMade > 0) {
+                const p = this.players[a.playerId];
+                if (p.team === 'home') home += a.ftMade; else away += a.ftMade;
+            }
+        });
+        return { home, away };
+    },
 
-    // Données fictives pour démo immédiate
-    function initDemo() {
-        const createP = (id, num, name, team) => ({id, num, name, team, stats: {pts:0, reb:0, fouls:0, ftm:0, fta:0}});
-        STATE.players.push(createP(1, "4", "Westbrook", "h"));
-        STATE.players.push(createP(2, "6", "LeBron", "h"));
-        STATE.players.push(createP(3, "3", "Davis", "h"));
-        STATE.players.push(createP(11, "0", "Tatum", "a"));
-        STATE.players.push(createP(12, "7", "Brown", "a"));
-        STATE.players.push(createP(13, "36", "Smart", "a"));
-        renderRosters();
-        drawCourt();
+    getScoreAtAction(actionIndex) {
+        let home = 0, away = 0;
+        for (let i = 0; i <= actionIndex; i++) {
+            const a = this.actions[i];
+            if (a.type === 'SHOT' && a.made) {
+                const p = this.players[a.playerId];
+                if (p.team === 'home') home += a.value; else away += a.value;
+            }
+            if (a.type === 'FOUL' && a.ftMade > 0) {
+                const p = this.players[a.playerId];
+                if (p.team === 'home') home += a.ftMade; else away += a.ftMade;
+            }
+        }
+        return { home, away };
+    },
+
+    calculatePlusMinus(playerId) {
+        let pm = 0;
+        this.actions.forEach(a => {
+            if (!a.onCourt || !a.onCourt.includes(playerId)) return;
+            const player = this.players[a.playerId];
+            if (!player) return;
+            const myTeam = this.players[playerId].team;
+            let pts = 0;
+            if (a.type === 'SHOT' && a.made) pts = a.value;
+            if (a.type === 'FOUL' && a.ftMade > 0) pts = a.ftMade;
+            if (pts > 0) { if (player.team === myTeam) pm += pts; else pm -= pts; }
+        });
+        return pm;
+    },
+
+    recalculateAllStats() {
+        Object.values(this.players).forEach(p => {
+            p.stats = { pts: 0, oreb: 0, dreb: 0, ast: 0, stl: 0, blk: 0, tov: 0, fouls: 0, fgm: 0, fga: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0, minutes: p.stats.minutes || 0 };
+        });
+        this.actions.forEach(a => {
+            const p = this.players[a.playerId];
+            if (!p) return;
+            switch (a.type) {
+                case 'SHOT':
+                    if (a.value === 3) { p.stats.fg3a++; if (a.made) { p.stats.fg3m++; p.stats.pts += 3; } }
+                    else { p.stats.fga++; if (a.made) { p.stats.fgm++; p.stats.pts += a.value; } }
+                    if (a.assistBy) { const assister = this.players[a.assistBy]; if (assister) assister.stats.ast++; }
+                    break;
+                case 'OREB': p.stats.oreb++; break;
+                case 'DREB': p.stats.dreb++; break;
+                case 'AST': p.stats.ast++; break;
+                case 'STL':
+                    p.stats.stl++;
+                    if (a.victimId) { const victim = this.players[a.victimId]; if (victim) victim.stats.tov++; }
+                    break;
+                case 'BLK': p.stats.blk++; break;
+                case 'TOV': p.stats.tov++; break;
+                case 'FOUL':
+                    p.stats.fouls++;
+                    if (a.ftAttempted > 0) { p.stats.ftm += a.ftMade; p.stats.fta += a.ftAttempted; p.stats.pts += a.ftMade; }
+                    break;
+            }
+        });
+    },
+
+    toExport() {
+        const playerStats = {};
+        Object.values(this.players).filter(p => p.team === 'home').forEach(p => {
+            playerStats[p.id] = {
+                pts: p.stats.pts, reb: p.stats.oreb + p.stats.dreb, oreb: p.stats.oreb, dreb: p.stats.dreb,
+                ast: p.stats.ast, stl: p.stats.stl, blk: p.stats.blk, tov: p.stats.tov, pf: p.stats.fouls,
+                fgm: p.stats.fgm, fga: p.stats.fga, threePM: p.stats.fg3m, threePA: p.stats.fg3a,
+                ftm: p.stats.ftm, fta: p.stats.fta,
+                minutes: Math.round(p.stats.minutes / 60), plusMinus: this.calculatePlusMinus(p.id)
+            };
+        });
+        const scores = this.getRunningScore();
+        return { id: this.match.id || Date.now().toString(36), date: this.match.date || new Date().toLocaleDateString('fr-FR'), opponent: this.match.awayTeam.name, homeScore: scores.home, awayScore: scores.away, phase: 'phase1', playerStats, actions: this.actions };
     }
+};
 
-    // --- 2. GESTION DU WIZARD FAUTE (Le cœur de ta demande) ---
+const PlayerFactory = {
+    create(id, number, name, team) {
+        return { id, number: String(number), name, team, stats: { pts: 0, oreb: 0, dreb: 0, ast: 0, stl: 0, blk: 0, tov: 0, fouls: 0, fgm: 0, fga: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0, minutes: 0 } };
+    }
+};
 
-    // ÉTAPE 1 : Démarrage
-    function startFoulProcess() {
-        if (!STATE.selectedPlayerId) return alert("Sélectionne un joueur fautif !");
-        
-        // Reset context
-        STATE.foulContext = {
-            playerId: STATE.selectedPlayerId,
-            isShooting: false,
-            shotVal: 0,
-            shotMade: false,
-            ftCount: 0
+const Court = {
+    canvas: null, ctx: null, width: 380, height: 200,
+    init() {
+        this.canvas = document.getElementById('courtCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.canvas.addEventListener('click', (e) => this.handleClick(e));
+        this.canvas.addEventListener('touchend', (e) => { e.preventDefault(); this.handleClick(e.changedTouches[0]); });
+    },
+    resize() {
+        const wrapper = this.canvas.parentElement;
+        const maxW = Math.min(wrapper.clientWidth * 0.95, 420);
+        const maxH = wrapper.clientHeight * 0.95;
+        const ratio = this.width / this.height;
+        if (maxW / ratio <= maxH) { this.canvas.width = maxW; this.canvas.height = maxW / ratio; }
+        else { this.canvas.height = maxH; this.canvas.width = maxH * ratio; }
+        this.draw();
+    },
+    draw() {
+        const ctx = this.ctx, w = this.canvas.width, h = this.canvas.height, scale = w / this.width;
+        ctx.fillStyle = '#c4956a'; ctx.fillRect(0, 0, w, h);
+        ctx.strokeStyle = 'rgba(139, 90, 43, 0.3)'; ctx.lineWidth = 1;
+        for (let i = 0; i < w; i += 15) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+        ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2 * scale;
+        const paintW = 55 * scale, paintH = 90 * scale, paintY = (h - paintH) / 2;
+        ctx.strokeRect(0, paintY, paintW, paintH);
+        ctx.beginPath(); ctx.arc(0, h/2, 130 * scale, -0.45 * Math.PI, 0.45 * Math.PI); ctx.stroke();
+        ctx.beginPath(); ctx.arc(paintW, h/2, 18 * scale, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeRect(w - paintW, paintY, paintW, paintH);
+        ctx.beginPath(); ctx.arc(w, h/2, 130 * scale, 0.55 * Math.PI, 1.45 * Math.PI); ctx.stroke();
+        ctx.beginPath(); ctx.arc(w - paintW, h/2, 18 * scale, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(w/2, h/2, 18 * scale, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.beginPath(); ctx.arc(6 * scale, h/2, 4 * scale, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(w - 6 * scale, h/2, 4 * scale, 0, Math.PI * 2); ctx.fill();
+        this.drawShotMarkers();
+    },
+    drawShotMarkers() {
+        const ctx = this.ctx, w = this.canvas.width, h = this.canvas.height;
+        const scaleX = w / this.width, scaleY = h / this.height;
+        State.actions.filter(a => a.type === 'SHOT').forEach(shot => {
+            const x = shot.x * scaleX, y = shot.y * scaleY;
+            ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = shot.made ? 'rgba(34, 197, 94, 0.9)' : 'rgba(239, 68, 68, 0.9)';
+            ctx.strokeStyle = shot.made ? '#166534' : '#991b1b';
+            ctx.lineWidth = 1.5; ctx.fill(); ctx.stroke();
+            ctx.fillStyle = 'white'; ctx.font = 'bold 7px Inter';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(shot.value, x, y);
+        });
+    },
+    handleClick(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) * (this.width / this.canvas.width);
+        const y = (e.clientY - rect.top) * (this.height / this.canvas.height);
+        GameEngine.handleCourtClick(x, y);
+    },
+    getZoneValue(x) { return (x > 115 && x < this.width - 115) ? 3 : 2; },
+    showOverlay(msg) { const el = document.getElementById('courtOverlay'); el.innerHTML = `<div class="icon">🎯</div><div>${msg}</div>`; el.classList.add('visible'); },
+    hideOverlay() { document.getElementById('courtOverlay').classList.remove('visible'); }
+};
+
+const UI = {
+    init() { this.renderRosters(); this.updateScoreboard(); this.updateOncourtDisplay(); },
+    switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tabId}`));
+        if (tabId === 'boxscore') this.renderBoxScore();
+        if (tabId === 'pbp') this.renderPlayByPlay();
+    },
+    renderRosters() {
+        const renderTeam = (team, containerId) => {
+            const container = document.getElementById(containerId);
+            const players = Object.values(State.players).filter(p => p.team === team);
+            const onCourt = State.onCourt[team];
+            container.innerHTML = players.map(p => {
+                const selected = State.ui.selectedPlayerId === p.id;
+                const isOnCourt = onCourt.includes(p.id);
+                const foulDots = Array(Math.min(p.stats.fouls, 5)).fill('<span class="foul-dot"></span>').join('');
+                const mins = Math.floor(p.stats.minutes / 60);
+                return `<div class="player-chip ${team} ${selected ? 'selected' : ''} ${isOnCourt ? 'oncourt' : ''}" onclick="GameEngine.handlePlayerClick(${p.id})">
+                    ${p.stats.fouls > 0 ? `<div class="foul-indicator">${foulDots}</div>` : ''}
+                    <span class="player-number">${p.number}</span>
+                    <span class="player-name">${p.name}</span>
+                    <div class="player-mini-stats"><span class="pts">${p.stats.pts}p</span><span class="min">${mins}'</span></div>
+                </div>`;
+            }).join('');
         };
-
-        showModal("Faute sur Tir ?", [
-            { txt: "OUI", cls: "btn-yes", cb: () => handleFoulStep1(true) },
-            { txt: "NON", cls: "btn-no", cb: () => handleFoulStep1(false) }
-        ], true);
+        renderTeam('home', 'rosterHome');
+        renderTeam('away', 'rosterAway');
+        this.updateOncourtCounts();
+    },
+    updateOncourtCounts() {
+        const homeCount = State.onCourt.home.length, awayCount = State.onCourt.away.length;
+        const homeEl = document.getElementById('homeOncourtCount'), awayEl = document.getElementById('awayOncourtCount');
+        homeEl.textContent = `${homeCount}/5`; awayEl.textContent = `${awayCount}/5`;
+        homeEl.className = 'oncourt-count' + (homeCount === 5 ? '' : homeCount > 5 ? ' error' : ' warning');
+        awayEl.className = 'oncourt-count' + (awayCount === 5 ? '' : awayCount > 5 ? ' error' : ' warning');
+    },
+    updateOncourtDisplay() {
+        const homeDisplay = document.getElementById('oncourtHome');
+        const awayDisplay = document.getElementById('oncourtAway');
+        homeDisplay.innerHTML = State.onCourt.home.length === 0 ? '<span style="color: var(--text-muted)">-</span>' :
+            State.onCourt.home.map(id => `<span class="player-tag">#${State.players[id].number}</span>`).join('');
+        awayDisplay.innerHTML = State.onCourt.away.length === 0 ? '<span style="color: var(--text-muted)">-</span>' :
+            State.onCourt.away.map(id => `<span class="player-tag">#${State.players[id].number}</span>`).join('');
+    },
+    updateScoreboard() {
+        const scores = State.getRunningScore();
+        document.getElementById('scoreHome').textContent = scores.home;
+        document.getElementById('scoreAway').textContent = scores.away;
+        document.getElementById('quarterBadge').textContent = `Q${State.match.quarter}`;
+        const mins = Math.floor(State.match.time / 60), secs = State.match.time % 60;
+        document.getElementById('timerBtn').textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        document.getElementById('timerBtn').classList.toggle('running', State.match.isRunning);
+    },
+    animateScore(team) {
+        const el = document.getElementById(team === 'home' ? 'scoreHome' : 'scoreAway');
+        el.classList.add('pop'); setTimeout(() => el.classList.remove('pop'), 300);
+    },
+    showShotPopup() { document.getElementById('shotPopup').classList.add('active'); },
+    hideShotPopup() { document.getElementById('shotPopup').classList.remove('active'); },
+    showSubHelper(show) { document.getElementById('subHelper').classList.toggle('active', show); },
+    showModal(title, subtitle, bodyHtml, buttons, gridClass = '', headerClass = '') {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalSubtitle').textContent = subtitle || '';
+        document.getElementById('modalBody').innerHTML = bodyHtml || '';
+        document.getElementById('modalHeader').className = 'modal-header ' + headerClass;
+        const actionsDiv = document.getElementById('modalActions');
+        actionsDiv.className = `modal-actions ${gridClass}`;
+        actionsDiv.innerHTML = buttons.map(b => `<button class="modal-btn ${b.class || 'secondary'}" onclick="${b.action}">${b.text}</button>`).join('');
+        document.getElementById('modalBackdrop').classList.add('active');
+    },
+    closeModal() { document.getElementById('modalBackdrop').classList.remove('active'); },
+    toast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<span class="icon">${type === 'success' ? '✓' : '⚠️'}</span>${message}`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+    },
+    renderBoxScore() {
+        const container = document.getElementById('boxscoreContent');
+        const renderTeamTable = (team, label, dotClass) => {
+            const players = Object.values(State.players).filter(p => p.team === team);
+            if (players.length === 0) return '';
+            const totals = { pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, tov: 0, fgm: 0, fga: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0, mins: 0, fouls: 0 };
+            const rows = players.map(p => {
+                const mins = Math.floor(p.stats.minutes / 60), pm = State.calculatePlusMinus(p.id), reb = p.stats.oreb + p.stats.dreb;
+                totals.pts += p.stats.pts; totals.reb += reb; totals.ast += p.stats.ast; totals.stl += p.stats.stl; totals.blk += p.stats.blk; totals.tov += p.stats.tov;
+                totals.fgm += p.stats.fgm; totals.fga += p.stats.fga; totals.fg3m += p.stats.fg3m; totals.fg3a += p.stats.fg3a; totals.ftm += p.stats.ftm; totals.fta += p.stats.fta; totals.mins += mins; totals.fouls += p.stats.fouls;
+                return `<tr><td class="player-cell">#${p.number} ${p.name}</td><td class="min-cell" onclick="GameEngine.editPlayerMinutes(${p.id})">${mins}'</td><td class="highlight">${p.stats.pts}</td><td>${reb}</td><td>${p.stats.ast}</td><td>${p.stats.stl}</td><td>${p.stats.blk}</td><td>${p.stats.tov}</td><td>${p.stats.fgm}-${p.stats.fga}</td><td>${p.stats.fg3m}-${p.stats.fg3a}</td><td>${p.stats.ftm}-${p.stats.fta}</td><td>${p.stats.fouls}</td><td class="${pm >= 0 ? 'plus' : 'minus'}">${pm > 0 ? '+' : ''}${pm}</td></tr>`;
+            }).join('');
+            return `<div class="boxscore-section"><div class="boxscore-title"><span class="dot ${dotClass}"></span>${label}</div><table class="boxscore-table"><thead><tr><th>Joueur</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TO</th><th>FG</th><th>3P</th><th>FT</th><th>PF</th><th>+/-</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="font-weight:700; background: var(--bg-elevated);"><td>TOTAL</td><td>${totals.mins}'</td><td class="highlight">${totals.pts}</td><td>${totals.reb}</td><td>${totals.ast}</td><td>${totals.stl}</td><td>${totals.blk}</td><td>${totals.tov}</td><td>${totals.fgm}-${totals.fga}</td><td>${totals.fg3m}-${totals.fg3a}</td><td>${totals.ftm}-${totals.fta}</td><td>${totals.fouls}</td><td>-</td></tr></tfoot></table></div>`;
+        };
+        container.innerHTML = renderTeamTable('home', State.match.homeTeam.name, 'home') + renderTeamTable('away', State.match.awayTeam.name, 'away');
+    },
+    renderPlayByPlay() {
+        const container = document.getElementById('pbpContent');
+        if (State.actions.length === 0) { container.innerHTML = '<div class="pbp-empty">📝 Aucune action enregistrée</div>'; return; }
+        const actionIcons = { 'SHOT': '🏀', 'OREB': '🔄', 'DREB': '🛡️', 'AST': '🎯', 'STL': '⚡', 'BLK': '✋', 'TOV': '💨', 'FOUL': '🚨', 'SUB_IN': '➡️', 'SUB_OUT': '⬅️' };
+        const actionLabels = {
+            'SHOT': (a) => { let label = `${a.value}pts ${a.made ? 'Marqué' : 'Raté'}`; if (a.assistBy) { const assister = State.players[a.assistBy]; if (assister) label += ` (Passe: #${assister.number})`; } return label; },
+            'OREB': () => 'Rebond Offensif', 'DREB': () => 'Rebond Défensif', 'AST': () => 'Passe Décisive',
+            'STL': (a) => { let label = 'Interception'; if (a.victimId) { const victim = State.players[a.victimId]; if (victim) label += ` (sur #${victim.number})`; } return label; },
+            'BLK': () => 'Contre', 'TOV': () => 'Perte de balle',
+            'FOUL': (a) => `Faute${a.ftAttempted > 0 ? ` + ${a.ftMade}/${a.ftAttempted} LF` : ''}`,
+            'SUB_IN': () => 'Entrée', 'SUB_OUT': () => 'Sortie'
+        };
+        const reversed = [...State.actions].reverse();
+        container.innerHTML = reversed.map((a, revIdx) => {
+            const idx = State.actions.length - 1 - revIdx;
+            const p = State.players[a.playerId];
+            if (!p) return '';
+            const mins = Math.floor(a.time / 60), secs = a.time % 60;
+            const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            const score = State.getScoreAtAction(idx);
+            const icon = actionIcons[a.type] || '📋';
+            const label = actionLabels[a.type] ? actionLabels[a.type](a) : a.type;
+            return `<div class="pbp-item ${p.team}" onclick="GameEngine.editAction(${idx})"><div class="pbp-time"><div>${timeStr}</div><div class="pbp-quarter">Q${a.quarter}</div></div><div class="pbp-icon">${icon}</div><div class="pbp-details"><div class="pbp-player">#${p.number} ${p.name}</div><div class="pbp-action">${label}</div></div><div class="pbp-score">${score.home} - ${score.away}</div></div>`;
+        }).join('');
+    },
+    renderPlayerSelectGrid(players, team, onClickFn) {
+        return `<div class="player-select-grid">${players.map(p => `<div class="player-select-btn ${team}" onclick="${onClickFn}(${p.id})"><div class="num">#${p.number}</div><div class="name">${p.name}</div></div>`).join('')}</div>`;
     }
+};
 
-    // ÉTAPE 2 : Branchement
-    function handleFoulStep1(isOnShot) {
-        STATE.foulContext.isShooting = isOnShot;
-        closeModal();
+const GameEngine = {
+    timerInterval: null,
+    init() { Court.init(); this.loadDemoData(); UI.init(); },
+    loadDemoData() {
+        const demo = [
+            { num: '4', name: 'Westbrook', team: 'home' }, { num: '6', name: 'LeBron', team: 'home' },
+            { num: '3', name: 'Davis', team: 'home' }, { num: '23', name: 'Curry', team: 'home' },
+            { num: '11', name: 'Thompson', team: 'home' }, { num: '0', name: 'Tatum', team: 'away' },
+            { num: '7', name: 'Brown', team: 'away' }, { num: '36', name: 'Smart', team: 'away' },
+            { num: '12', name: 'Morant', team: 'away' }, { num: '1', name: 'Booker', team: 'away' }
+        ];
+        demo.forEach((p, i) => { State.players[i + 1] = PlayerFactory.create(i + 1, p.num, p.name, p.team); });
+        State.onCourt.home = [1, 2, 3, 4, 5]; State.onCourt.away = [6, 7, 8, 9, 10];
+        State.match.homeTeam.name = 'Lakers'; State.match.awayTeam.name = 'Celtics';
+        document.getElementById('homeLabel').textContent = 'Lakers'; document.getElementById('awayLabel').textContent = 'Celtics';
+        document.getElementById('homeBadge').textContent = 'LAK'; document.getElementById('awayBadge').textContent = 'BOS';
+    },
+    save() { localStorage.setItem('basketStatsV5', JSON.stringify({ match: State.match, players: State.players, actions: State.actions, onCourt: State.onCourt })); },
 
-        if (isOnShot) {
-            // Etape 2A : Demander la zone sur le terrain
-            STATE.pendingAction = 'FOUL_LOC';
-            showOverlay("CLIQUEZ SUR LA ZONE DU TIR");
-        } else {
-            // Etape 2B : Pas sur tir -> Direct aux LFs (Bonus ?)
-            // On demande s'il y a des LFs (Bonus ou faute technique)
-            askFreeThrowCount(true); // true = mode manuel (0 ou 2)
+    toggleTimer() {
+        State.match.isRunning = !State.match.isRunning;
+        if (State.match.isRunning) {
+            this.timerInterval = setInterval(() => {
+                if (State.match.time > 0) {
+                    State.match.time--;
+                    [...State.onCourt.home, ...State.onCourt.away].forEach(id => { if (State.players[id]) State.players[id].stats.minutes++; });
+                    UI.updateScoreboard();
+                } else { this.endQuarter(); }
+            }, 1000);
+        } else { clearInterval(this.timerInterval); }
+        UI.updateScoreboard(); UI.renderRosters();
+    },
+    endQuarter() { clearInterval(this.timerInterval); State.match.isRunning = false; State.match.quarter++; State.match.time = State.match.quarterDuration; UI.updateScoreboard(); UI.toast(`Fin du Q${State.match.quarter - 1} !`); },
+    showQuarterModal() {
+        UI.showModal('Quart-temps', '', '', [
+            { text: 'Q1', action: 'GameEngine.setQuarter(1)', class: State.match.quarter === 1 ? 'primary' : 'secondary' },
+            { text: 'Q2', action: 'GameEngine.setQuarter(2)', class: State.match.quarter === 2 ? 'primary' : 'secondary' },
+            { text: 'Q3', action: 'GameEngine.setQuarter(3)', class: State.match.quarter === 3 ? 'primary' : 'secondary' },
+            { text: 'Q4', action: 'GameEngine.setQuarter(4)', class: State.match.quarter === 4 ? 'primary' : 'secondary' },
+            { text: 'Prol.', action: 'GameEngine.setQuarter(5)', class: State.match.quarter >= 5 ? 'primary' : 'secondary' }
+        ], 'grid-5');
+    },
+    setQuarter(q) { State.match.quarter = q; UI.closeModal(); UI.updateScoreboard(); },
+    showTimerEditModal() {
+        const mins = Math.floor(State.match.time / 60), secs = State.match.time % 60;
+        UI.showModal('⏱️ Modifier le Chrono', 'Les minutes des joueurs sur terrain seront ajustées',
+            `<input type="text" class="modal-input" id="timerInput" value="${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}" placeholder="MM:SS">`,
+            [{ text: 'Annuler', action: 'UI.closeModal()', class: 'secondary' }, { text: 'Valider', action: 'GameEngine.applyTimerEdit()', class: 'primary' }], 'grid-2');
+    },
+    applyTimerEdit() {
+        const input = document.getElementById('timerInput').value, match = input.match(/(\d{1,2}):(\d{2})/);
+        if (!match) { UI.toast('Format invalide (MM:SS)', 'error'); return; }
+        const newTime = parseInt(match[1]) * 60 + parseInt(match[2]), delta = State.match.time - newTime;
+        [...State.onCourt.home, ...State.onCourt.away].forEach(id => { const p = State.players[id]; if (p) p.stats.minutes = Math.max(0, p.stats.minutes + delta); });
+        State.match.time = newTime; UI.closeModal(); UI.updateScoreboard(); UI.renderRosters(); UI.toast(`Chrono ajusté (Δ ${delta > 0 ? '+' : ''}${delta}s)`); this.save();
+    },
+
+    handlePlayerClick(id) {
+        const player = State.players[id];
+        if (State.ui.subMode === 'selecting_out') {
+            if (!State.onCourt[player.team].includes(id)) { UI.toast('Ce joueur n\'est pas sur le terrain', 'error'); return; }
+            State.ui.subOutPlayer = id; State.ui.subMode = 'selecting_in'; State.ui.subTeam = player.team;
+            document.getElementById('subHelper').textContent = 'Sélectionnez le joueur ENTRANT';
+            UI.renderRosters(); return;
         }
-    }
-
-    // ÉTAPE 2A (Suite) : Après clic terrain (appelé par handleCourtClick)
-    function handleFoulShotLoc(x, y, val) {
-        STATE.foulContext.shotVal = val;
-        hideOverlay();
-        
-        // Demande si panier marqué
-        showModal(`Tir à ${val} pts marqué ?`, [
-            { txt: "OUI (Panier Accordé)", cls: "btn-yes", cb: () => handleFoulShotResult(true) },
-            { txt: "NON (Tir Raté)", cls: "btn-no", cb: () => handleFoulShotResult(false) }
-        ], true);
-    }
-
-    // ÉTAPE 3 : Calcul des LFs et demande de réussite
-    function handleFoulShotResult(made) {
-        STATE.foulContext.shotMade = made;
-
-        if (made) {
-            // Panier marqué -> On compte le tir
-            recordShot(STATE.foulContext.playerId, STATE.foulContext.shotVal, true);
-            // And-1 : Généralement 1 seul LF
-            STATE.foulContext.ftCount = 1; 
-        } else {
-            // Panier raté -> On NE compte PAS le tir (règle FIBA)
-            // LFs = Valeur du tir (2 ou 3)
-            STATE.foulContext.ftCount = STATE.foulContext.shotVal;
+        if (State.ui.subMode === 'selecting_in') {
+            if (player.team !== State.ui.subTeam) { UI.toast('Même équipe requise', 'error'); return; }
+            if (State.onCourt[player.team].includes(id)) { UI.toast('Déjà sur le terrain', 'error'); return; }
+            this.executeSubstitution(State.ui.subOutPlayer, id); return;
         }
-        
-        closeModal();
-        askFreeThrowResult(STATE.foulContext.ftCount);
-    }
+        State.ui.selectedPlayerId = State.ui.selectedPlayerId === id ? null : id; UI.renderRosters();
+    },
+    selectPlayer(id) { this.handlePlayerClick(id); },
+    getSelectedPlayer() { return State.players[State.ui.selectedPlayerId]; },
 
-    function askFreeThrowCount(isNonShooting) {
-        // Cas faute non sur tir : Bonus (2) ou rien (0) ?
-        showModal("Lancers Francs à tirer ?", [
-            { txt: "0 LF (Touche)", cls: "btn-no", cb: () => finalizeFoul(0) },
-            { txt: "2 LF (Bonus)", cls: "btn-opt", cb: () => askFreeThrowResult(2) } // Si 2 LF, on demande combien mis
+    startSubstitution() { State.ui.subMode = 'selecting_out'; UI.showSubHelper(true); document.getElementById('subHelper').textContent = 'Sélectionnez le joueur SORTANT'; UI.toast('Mode remplacement activé'); },
+    executeSubstitution(outId, inId) {
+        const team = State.players[outId].team, outPlayer = State.players[outId], inPlayer = State.players[inId];
+        State.actions.push({ id: Date.now(), type: 'SUB_OUT', playerId: outId, quarter: State.match.quarter, time: State.match.time, onCourt: [...State.onCourt.home, ...State.onCourt.away] });
+        State.actions.push({ id: Date.now() + 1, type: 'SUB_IN', playerId: inId, quarter: State.match.quarter, time: State.match.time, onCourt: [...State.onCourt.home, ...State.onCourt.away] });
+        const idx = State.onCourt[team].indexOf(outId); State.onCourt[team][idx] = inId;
+        State.ui.subMode = null; State.ui.subOutPlayer = null; State.ui.subTeam = null; State.ui.selectedPlayerId = null;
+        UI.showSubHelper(false); UI.renderRosters(); UI.updateOncourtDisplay(); UI.toast(`#${outPlayer.number} ↔ #${inPlayer.number}`); this.save();
+    },
+
+    handleCourtClick(x, y) {
+        const value = Court.getZoneValue(x);
+        if (State.ui.pendingAction === 'FOUL_LOC') { State.ui.pendingAction = null; Court.hideOverlay(); this.handleFoulShotLocation(x, y, value); return; }
+        if (State.ui.pendingAction === 'BLOCK_RECEIVED') { State.ui.pendingAction = null; Court.hideOverlay(); this.recordBlockedShot(x, y, value); return; }
+        if (State.ui.pendingAction === 'ASSIST_SHOT') { State.ui.pendingAction = null; Court.hideOverlay(); this.finalizeAssistShot(x, y, value); return; }
+        const player = this.getSelectedPlayer();
+        if (!player) { UI.toast('Sélectionnez un joueur', 'error'); return; }
+        State.ui.pendingShot = { x, y, value, playerId: player.id }; UI.showShotPopup();
+    },
+    confirmShot(made) { UI.hideShotPopup(); const shot = State.ui.pendingShot; if (!shot) return; this.recordShot(shot.playerId, shot.value, made, shot.x, shot.y); State.ui.pendingShot = null; },
+    recordShot(playerId, value, made, x, y, subType = null, assistBy = null) {
+        const player = State.players[playerId]; if (!player) return;
+        if (value === 3) { player.stats.fg3a++; if (made) player.stats.fg3m++; } else { player.stats.fga++; if (made) player.stats.fgm++; }
+        if (made) { player.stats.pts += value; UI.animateScore(player.team); }
+        if (assistBy && made) { const assister = State.players[assistBy]; if (assister) assister.stats.ast++; }
+        State.actions.push({ id: Date.now(), type: 'SHOT', playerId, value, made, x, y, subType, assistBy, quarter: State.match.quarter, time: State.match.time, onCourt: [...State.onCourt.home, ...State.onCourt.away] });
+        this.save(); UI.renderRosters(); UI.updateScoreboard(); Court.draw();
+        let msg = `${player.name}: ${made ? '✓' : '✗'} ${value}pts`;
+        if (assistBy && made) { const a = State.players[assistBy]; msg += ` (Passe: ${a.name})`; }
+        UI.toast(msg, made ? 'success' : 'error');
+    },
+    recordBlockedShot(x, y, value) { const player = this.getSelectedPlayer(); if (!player) return; this.recordShot(player.id, value, false, x, y, 'blocked'); },
+
+    // === ASSIST WORKFLOW ===
+    startAssistWorkflow() {
+        const player = this.getSelectedPlayer();
+        if (!player) { UI.toast('Sélectionnez le passeur', 'error'); return; }
+        const teammates = Object.values(State.players).filter(p => p.team === player.team && p.id !== player.id && State.onCourt[player.team].includes(p.id));
+        if (teammates.length === 0) { UI.toast('Pas de coéquipier sur terrain', 'error'); return; }
+        State.ui.assistContext = { passerId: player.id };
+        const playersHtml = UI.renderPlayerSelectGrid(teammates, player.team, 'GameEngine.selectAssistReceiver');
+        UI.showModal('🎯 Passe Décisive', `Qui reçoit la passe de #${player.number} ${player.name} ?`, playersHtml, [{ text: 'Annuler', action: 'UI.closeModal(); State.ui.assistContext = {};', class: 'secondary' }], '', 'green');
+    },
+    selectAssistReceiver(receiverId) {
+        State.ui.assistContext.receiverId = receiverId;
+        const receiver = State.players[receiverId];
+        UI.closeModal();
+        State.ui.pendingAction = 'ASSIST_SHOT';
+        Court.showOverlay(`Où #${receiver.number} ${receiver.name} a tiré ?`);
+    },
+    finalizeAssistShot(x, y, value) {
+        const ctx = State.ui.assistContext;
+        State.ui.pendingShot = { x, y, value, playerId: ctx.receiverId, assistBy: ctx.passerId };
+        UI.showShotPopup();
+        State.ui.assistContext = {};
+    },
+    confirmShot(made) {
+        UI.hideShotPopup();
+        const shot = State.ui.pendingShot;
+        if (!shot) return;
+        this.recordShot(shot.playerId, shot.value, made, shot.x, shot.y, null, shot.assistBy);
+        State.ui.pendingShot = null;
+    },
+
+    // === STEAL WORKFLOW ===
+    startStealWorkflow() {
+        const player = this.getSelectedPlayer();
+        if (!player) { UI.toast('Sélectionnez l\'intercepteur', 'error'); return; }
+        const opponents = Object.values(State.players).filter(p => p.team !== player.team && State.onCourt[p.team].includes(p.id));
+        if (opponents.length === 0) { UI.toast('Pas d\'adversaire sur terrain', 'error'); return; }
+        State.ui.stealContext = { stealerId: player.id };
+        const oppTeam = player.team === 'home' ? 'away' : 'home';
+        const playersHtml = UI.renderPlayerSelectGrid(opponents, oppTeam, 'GameEngine.selectStealVictim');
+        UI.showModal('⚡ Interception', `Sur quel adversaire #${player.number} ${player.name} intercepte ?`, playersHtml, [{ text: 'Annuler', action: 'UI.closeModal(); State.ui.stealContext = {};', class: 'secondary' }], '', 'yellow');
+    },
+    selectStealVictim(victimId) {
+        const ctx = State.ui.stealContext;
+        const stealer = State.players[ctx.stealerId];
+        const victim = State.players[victimId];
+        stealer.stats.stl++;
+        victim.stats.tov++;
+        State.actions.push({ id: Date.now(), type: 'STL', playerId: ctx.stealerId, victimId, quarter: State.match.quarter, time: State.match.time, onCourt: [...State.onCourt.home, ...State.onCourt.away] });
+        UI.closeModal();
+        this.save(); UI.renderRosters();
+        UI.toast(`${stealer.name}: Intercept sur #${victim.number}`);
+        State.ui.stealContext = {};
+    },
+
+    action(type) {
+        const player = this.getSelectedPlayer();
+        if (!player) { UI.toast('Sélectionnez un joueur', 'error'); return; }
+        const labels = { 'OREB': { stat: 'oreb', label: 'Reb Off' }, 'DREB': { stat: 'dreb', label: 'Reb Def' }, 'BLK': { stat: 'blk', label: 'Contre' }, 'TOV': { stat: 'tov', label: 'Perte' } };
+        const info = labels[type];
+        if (info) {
+            player.stats[info.stat]++;
+            State.actions.push({ id: Date.now(), type, playerId: player.id, quarter: State.match.quarter, time: State.match.time, onCourt: [...State.onCourt.home, ...State.onCourt.away] });
+            this.save(); UI.renderRosters(); UI.toast(`${player.name}: ${info.label}`);
+        }
+    },
+    initBlockReceived() { if (!this.getSelectedPlayer()) { UI.toast('Qui subit le contre ?', 'error'); return; } State.ui.pendingAction = 'BLOCK_RECEIVED'; Court.showOverlay('Cliquez où était le tir'); },
+
+    startFoulWizard() {
+        const player = this.getSelectedPlayer();
+        if (!player) { UI.toast('Sélectionnez le fautif', 'error'); return; }
+        State.ui.foulContext = { playerId: player.id, isShooting: false, shotValue: 0, shotMade: false, ftCount: 0 };
+        UI.showModal('🚨 Type de Faute', `${player.name} - Faute n°${player.stats.fouls + 1}`, '',
+            [{ text: '🎯 Sur Tir', class: 'primary', action: 'GameEngine.foulOnShot(true)' }, { text: '🏃 Hors Tir', class: 'danger', action: 'GameEngine.foulOnShot(false)' }], 'grid-2');
+    },
+    foulOnShot(isShooting) {
+        State.ui.foulContext.isShooting = isShooting; UI.closeModal();
+        if (isShooting) { State.ui.pendingAction = 'FOUL_LOC'; Court.showOverlay('Cliquez sur la zone du tir'); }
+        else { this.askFreeThrowCount(); }
+    },
+    handleFoulShotLocation(x, y, value) {
+        State.ui.foulContext.shotValue = value; State.ui.foulContext.shotX = x; State.ui.foulContext.shotY = y;
+        UI.showModal(`🏀 Tir à ${value} points`, 'Le panier est-il accordé ?', '',
+            [{ text: '✓ And-1', class: 'primary', action: 'GameEngine.foulShotResult(true)' }, { text: '✗ Raté', class: 'danger', action: 'GameEngine.foulShotResult(false)' }], 'grid-2');
+    },
+    foulShotResult(made) {
+        State.ui.foulContext.shotMade = made; UI.closeModal();
+        const ctx = State.ui.foulContext;
+        if (made) { this.recordShot(ctx.playerId, ctx.shotValue, true, ctx.shotX, ctx.shotY, 'and1'); ctx.ftCount = 1; }
+        else { ctx.ftCount = ctx.shotValue; }
+        this.askFreeThrowResult(ctx.ftCount);
+    },
+    askFreeThrowCount() {
+        UI.showModal('🎯 Lancers Francs', 'Combien de lancers ?', '', [
+            { text: '0 LF', class: 'secondary', action: 'GameEngine.finalizeFoul(0, 0)' },
+            { text: '2 LF', class: 'info', action: 'GameEngine.askFreeThrowResult(2)' },
+            { text: '3 LF', class: 'info', action: 'GameEngine.askFreeThrowResult(3)' }
         ]);
+    },
+    askFreeThrowResult(count) {
+        State.ui.foulContext.ftCount = count; UI.closeModal();
+        const buttons = [];
+        for (let i = 0; i <= count; i++) { buttons.push({ text: `${i}/${count}`, class: i === count ? 'primary' : (i === 0 ? 'danger' : 'secondary'), action: `GameEngine.finalizeFoul(${i}, ${count})` }); }
+        UI.showModal(`🎯 ${count} Lancer${count > 1 ? 's' : ''} Franc${count > 1 ? 's' : ''}`, 'Résultat ?', '', buttons, 'grid-' + (count + 1));
+    },
+    finalizeFoul(made, attempted) {
+        UI.closeModal();
+        const ctx = State.ui.foulContext, player = State.players[ctx.playerId];
+        player.stats.fouls++;
+        if (attempted > 0) { player.stats.ftm += made; player.stats.fta += attempted; player.stats.pts += made; if (made > 0) UI.animateScore(player.team); }
+        State.actions.push({ id: Date.now(), type: 'FOUL', playerId: ctx.playerId, isShooting: ctx.isShooting, shotValue: ctx.shotValue, ftMade: made, ftAttempted: attempted, quarter: State.match.quarter, time: State.match.time, onCourt: [...State.onCourt.home, ...State.onCourt.away] });
+        this.save(); UI.renderRosters(); UI.updateScoreboard();
+        UI.toast(`${player.name}: Faute${attempted > 0 ? ` + ${made}/${attempted} LF` : ''}`);
+        State.ui.selectedPlayerId = null; State.ui.foulContext = {}; UI.renderRosters();
+    },
+
+    editAction(idx) {
+        const action = State.actions[idx], player = State.players[action.playerId];
+        UI.showModal('✏️ Modifier Action', `${player.name} - ${action.type}`, '',
+            [{ text: '🗑️ Supprimer', class: 'danger', action: `GameEngine.deleteAction(${idx})` }, { text: 'Annuler', class: 'secondary', action: 'UI.closeModal()' }], 'grid-2');
+    },
+    deleteAction(idx) {
+        State.actions.splice(idx, 1); State.recalculateAllStats();
+        UI.closeModal(); UI.renderPlayByPlay(); UI.renderRosters(); UI.updateScoreboard(); Court.draw(); this.save(); UI.toast('Action supprimée');
+    },
+    editPlayerMinutes(playerId) {
+        const player = State.players[playerId], mins = Math.floor(player.stats.minutes / 60), secs = player.stats.minutes % 60;
+        UI.showModal(`⏱️ Temps de jeu`, `#${player.number} ${player.name}`,
+            `<input type="text" class="modal-input" id="minutesInput" value="${mins}:${secs.toString().padStart(2, '0')}" placeholder="MM:SS">`,
+            [{ text: 'Annuler', action: 'UI.closeModal()', class: 'secondary' }, { text: 'Valider', action: `GameEngine.applyMinutesEdit(${playerId})`, class: 'primary' }], 'grid-2');
+    },
+    applyMinutesEdit(playerId) {
+        const input = document.getElementById('minutesInput').value, match = input.match(/(\d{1,2}):(\d{2})/);
+        if (!match) { UI.toast('Format invalide (MM:SS)', 'error'); return; }
+        State.players[playerId].stats.minutes = parseInt(match[1]) * 60 + parseInt(match[2]);
+        UI.closeModal(); UI.renderRosters(); UI.renderBoxScore(); this.save(); UI.toast('Temps de jeu modifié');
+    },
+
+    undo() {
+        if (State.actions.length === 0) { UI.toast('Rien à annuler', 'error'); return; }
+        State.actions.pop(); State.recalculateAllStats();
+        UI.renderRosters(); UI.updateScoreboard(); Court.draw(); this.save(); UI.toast('Action annulée');
+    },
+    exportData() {
+        const data = State.toExport(), json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' }), url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `match_${data.date.replace(/\//g, '-')}_vs_${data.opponent}.json`; a.click();
+        URL.revokeObjectURL(url); UI.toast('Match exporté !');
     }
+};
 
-    // Interface finale : "Combien de lancers marqués ?"
-    function askFreeThrowResult(count) {
-        let buttons = [];
-        
-        // Génère les boutons 0, 1, 2... selon le nombre de LF
-        for(let i=0; i<=count; i++) {
-            buttons.push({ 
-                txt: `${i} Marqué${i>1?'s':''}`, 
-                cls: "btn-opt", 
-                cb: () => finalizeFoul(i, count) 
-            });
-        }
-
-        showModal(`${count} Lancer${count>1?'s':''} Franc${count>1?'s':''} : Résultat ?`, buttons);
-    }
-
-    // FIN DU PROCESSUS
-    function finalizeFoul(madeCount, attemptCount = 0) {
-        closeModal();
-        const pId = STATE.foulContext.playerId;
-
-        // 1. Enregistrer la faute
-        recordAction(pId, 'FOUL', { detail: STATE.foulContext.isShooting ? "Sur Tir" : "Classique" });
-        const p = getPlayer(pId);
-        p.stats.fouls++;
-
-        // 2. Enregistrer les LFs
-        if (attemptCount > 0) {
-            // On enregistre globalement X/Y LF
-            p.stats.ftm += madeCount;
-            p.stats.fta += attemptCount;
-            // Mise à jour score
-            p.stats.pts += madeCount;
-            
-            // Log spécifique
-            recordAction(pId, 'FREE_THROW', { 
-                detail: `${madeCount}/${attemptCount}`, 
-                pts: madeCount 
-            });
-        }
-
-        updateUI();
-        STATE.selectedPlayerId = null; // Reset selection
-        renderRosters();
-    }
-
-    // --- 3. UTILITAIRES UI (MODAL) ---
-    function showModal(title, buttons, cols2 = false) {
-        document.getElementById('wizTitle').innerText = title;
-        const container = document.getElementById('wizContent');
-        container.innerHTML = '';
-        container.className = cols2 ? 'modal-btns cols-2' : 'modal-btns';
-
-        buttons.forEach(b => {
-            let btn = document.createElement('button');
-            btn.className = `btn-wizard ${b.cls}`;
-            btn.innerText = b.txt;
-            btn.onclick = b.cb;
-            container.appendChild(btn);
-        });
-
-        document.getElementById('wizardModal').style.display = 'flex';
-    }
-
-    function closeModal() {
-        document.getElementById('wizardModal').style.display = 'none';
-    }
-
-    // --- 4. LOGIQUE STANDARD ---
-    const canvas = document.getElementById('courtCanvas');
-    canvas.width = CANVAS_WIDTH; canvas.height = CANVAS_HEIGHT;
-    const ctx = canvas.getContext('2d');
-
-    function drawCourt() {
-        ctx.fillStyle = "#d19a6a"; ctx.fillRect(0,0, CANVAS_WIDTH, CANVAS_HEIGHT);
-        ctx.strokeStyle = "white"; ctx.lineWidth = 2;
-        // Dessin simplifié
-        ctx.strokeRect(0, 85, 100, 80); 
-        ctx.beginPath(); ctx.arc(0, 125, 130, -1.2, 1.2); ctx.stroke();
-        ctx.strokeRect(CANVAS_WIDTH-100, 85, 100, 80);
-        ctx.beginPath(); ctx.arc(CANVAS_WIDTH, 125, 130, Math.PI - 1.2, Math.PI + 1.2); ctx.stroke();
-        
-        // Afficher tirs
-        STATE.actions.forEach(a => {
-            if(a.type === 'shot') {
-                ctx.beginPath(); ctx.arc(a.x, a.y, 4, 0, Math.PI*2);
-                ctx.fillStyle = a.made ? '#28a745' : '#dc3545';
-                if(a.subType === 'blocked') ctx.strokeStyle = "black";
-                ctx.fill(); ctx.stroke();
-            }
-        });
-    }
-
-    canvas.addEventListener('mousedown', handleCourtClick);
-    
-    function handleCourtClick(e) {
-        // Si on est dans le processus de faute (Etape 2A)
-        if (STATE.pendingAction === 'FOUL_LOC') {
-            const coords = getCoords(e);
-            let val = (coords.x > 130 && coords.x < CANVAS_WIDTH - 130) ? 3 : 2;
-            STATE.pendingAction = null;
-            handleFoulShotLoc(coords.x, coords.y, val);
-            return;
-        }
-
-        // Si Contre Subi
-        if (STATE.pendingAction === 'BLOCK_RECEIVED') {
-            const coords = getCoords(e);
-            let val = (coords.x > 130 && coords.x < CANVAS_WIDTH - 130) ? 3 : 2;
-            STATE.pendingAction = null; hideOverlay();
-            
-            if(!STATE.selectedPlayerId) return;
-            // Enregistre tir raté (contré)
-            recordShot(STATE.selectedPlayerId, val, false, coords.x, coords.y, 'blocked');
-            alert("Contre subi enregistré");
-            return;
-        }
-
-        // Tir standard
-        if (STATE.selectedPlayerId) {
-            const coords = getCoords(e);
-            let val = (coords.x > 130 && coords.x < CANVAS_WIDTH - 130) ? 3 : 2;
-            if(confirm(`Tir ${val}pts ? OK=Marqué`)) {
-                recordShot(STATE.selectedPlayerId, val, true, coords.x, coords.y);
-            } else {
-                recordShot(STATE.selectedPlayerId, val, false, coords.x, coords.y);
-            }
-        }
-    }
-
-    function getCoords(e) {
-        const rect = canvas.getBoundingClientRect();
-        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    }
-
-    // --- 5. DATA ENGINE ---
-    function doSimpleStat(type) {
-        if (!STATE.selectedPlayerId) return alert("Sélectionne un joueur !");
-        recordAction(STATE.selectedPlayerId, type);
-        // Incrément simple
-        const p = getPlayer(STATE.selectedPlayerId);
-        if(type==='REB_OFF' || type==='REB_DEF') p.stats.reb++;
-        if(type==='AST') p.stats.ast++;
-        updateUI();
-    }
-
-    function recordShot(pId, val, made, x=0, y=0, subType=null) {
-        const p = getPlayer(pId);
-        if(made) p.stats.pts += val;
-        
-        recordAction(pId, 'shot', { val, made, x, y, subType });
-        updateUI();
-        drawCourt();
-    }
-
-    function recordAction(pId, type, data={}) {
-        const p = getPlayer(pId);
-        STATE.actions.push({
-            id: Date.now(),
-            playerId: pId,
-            type: type,
-            ...data,
-            time: document.getElementById('clock').innerText
-        });
-    }
-
-    function getPlayer(id) {
-        return STATE.players.find(p => p.id === id);
-    }
-
-    function updateUI() {
-        const sumPts = (t) => STATE.players.filter(p => p.team === t).reduce((a,b) => a + b.stats.pts, 0);
-        document.getElementById('scoreH').innerText = sumPts('h');
-        document.getElementById('scoreA').innerText = sumPts('a');
-        renderRosters();
-    }
-
-    function renderRosters() {
-        const fill = (divId, tm) => {
-            const div = document.getElementById(divId);
-            div.innerHTML = '';
-            STATE.players.filter(p => p.team === tm).forEach(p => {
-                let el = document.createElement('div');
-                el.className = `p-chip ${STATE.selectedPlayerId === p.id ? 'selected' : ''}`;
-                // Affichage Score + Fautes
-                el.innerHTML = `${p.num}<small>${p.stats.pts}p ${p.stats.fouls}f</small>`;
-                el.onclick = () => { STATE.selectedPlayerId = p.id; renderRosters(); };
-                div.appendChild(el);
-            });
-        };
-        fill('stripHome', 'h'); fill('stripAway', 'a');
-    }
-
-    function initBlockReceived() {
-        if (!STATE.selectedPlayerId) return alert("Qui subit ?");
-        STATE.pendingAction = 'BLOCK_RECEIVED';
-        showOverlay("Où était le tir ?");
-    }
-    function showOverlay(t) { document.getElementById('msgOverlay').innerText = t; document.getElementById('msgOverlay').classList.add('visible'); }
-    function hideOverlay() { document.getElementById('msgOverlay').classList.remove('visible'); }
-
-    // Démarrage
-    initDemo();
-
+document.addEventListener('DOMContentLoaded', () => GameEngine.init());
 </script>
 </body>
 </html>
